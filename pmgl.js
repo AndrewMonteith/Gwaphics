@@ -64,16 +64,28 @@ class Shape {
     this._position = position;
     this._size = size;
     this._colour = colour;
+    this._rotation = [0, 0, 0];
+
     this._children = [];
+  }
+
+  rotate(x, y, z) {
+    this._rotation = [
+      (this._rotation[0] + x) % 360,
+      (this._rotation[1] + y) % 360,
+      (this._rotation[2] + z) % 360,
+    ]
   }
 
   getModelMatrix() {
     let matrix = new Matrix4();
-    
-    matrix.translate(this._position[0], this._position[1], this._position[2]);
-    matrix.scale(this._size[0], this._size[1], this._size[2]);
-    
-    return matrix;
+
+    return matrix 
+      .setTranslate(this._position[0], this._position[1], this._position[2])
+      .rotate(this._rotation[1], 0, 1, 0)
+      .rotate(this._rotation[0], 1, 0, 0)
+      .rotate(this._rotation[2], 0, 0, 1)
+      .scale(this._size[0], this._size[1], this._size[2]);
   }
 }
 
@@ -275,17 +287,14 @@ class Scene {
     // For now we're only going to support a single point light.
     this._lightPosition = [-1, 1, 3];
     this._lightColour = [0.6, 0.6, 0.6];
-
     this._ambientLight = [0.2, 0.2, 0.2];
 
     this._gl = _createWebGLContext(canvas);
     this._projectionMatrix = _createProjectionMatrix(canvas.width / canvas.height);
     this._nodes = [];
 
-    const gl = this._gl;
-
-    gl.enable(gl.DEPTH_TEST);
-    gl.clear(gl.COLOR_DEPTH_BUFFER | gl.DEPTH_BUFFER_BIT);
+    this._gl.enable(this._gl.DEPTH_TEST);
+    this._gl.clear(this._gl.COLOR_DEPTH_BUFFER | this._gl.DEPTH_BUFFER_BIT);
   }
 
   setBackgroundColor(r, g, b) {
@@ -373,6 +382,7 @@ class Scene {
   _drawNodes() {
     const drawNode = node => {
       const modelMatrix = new Matrix4();
+
       node.draw(this, modelMatrix);
     };
 

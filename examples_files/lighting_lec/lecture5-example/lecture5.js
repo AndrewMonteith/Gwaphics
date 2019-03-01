@@ -97,11 +97,7 @@ function main() {
 
   // Calculate the view matrix and the projection matrix
   viewMatrix.setLookAt(0, 0, 15, 0, 0, -100, 0, 1, 0);
-
-  console.log("View Matrix:", viewMatrix);
-
   projMatrix.setPerspective(30, canvas.width/canvas.height, 1, 100);
-  console.log("Projection Matrix:", projMatrix);
   // Pass the model, view, and projection matrix to the uniform variable respectively
   gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
   gl.uniformMatrix4fv(u_ProjMatrix, false, projMatrix.elements);
@@ -163,7 +159,7 @@ function initVertexBuffers(gl) {
     1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0,     // v7-v4-v3-v2 down
     1, 0, 0,   1, 0, 0,   1, 0, 0,  1, 0, 0　    // v4-v7-v6-v5 back
  ]);
- console.log(colors.length);
+
 
   var normals = new Float32Array([    // Normal
     0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,  // v0-v1-v2-v3 front
@@ -230,6 +226,7 @@ function initArrayBuffer (gl, attribute, data, num, type) {
 }
 
 function initAxesVertexBuffers(gl) {
+
   var verticesColors = new Float32Array([
     // Vertex coordinates and color (for axes)
     -20.0,  0.0,   0.0,  1.0,  1.0,  1.0,  // (x,y,z), (r,g,b) 
@@ -278,6 +275,7 @@ function initAxesVertexBuffers(gl) {
 }
 
 function draw(gl, u_ModelMatrix, u_NormalMatrix, u_isLighting) {
+
   // Clear color and depth buffer
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -310,10 +308,10 @@ function draw(gl, u_ModelMatrix, u_NormalMatrix, u_isLighting) {
 
   // Rotate, and then translate
   modelMatrix.setTranslate(0, 0, 0);  // Translation (No translation is supported here)
-  // modelMatrix.rotate(g_yAngle, 0, 1, 0); // Rotate along y axis
-  // modelMatrix.rotate(g_xAngle, 1, 0, 0); // Rotate along x axis
+  modelMatrix.rotate(g_yAngle, 0, 1, 0); // Rotate along y axis
+  modelMatrix.rotate(g_xAngle, 1, 0, 0); // Rotate along x axis
   modelMatrix.scale(1.5, 1.5, 1.5); // Scale
-  
+
   // Pass the model matrix to the uniform variable
   gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
 
