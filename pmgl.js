@@ -11,21 +11,33 @@ precision mediump float;
 varying vec4 v_Color;
 varying vec3 v_Normal;
 varying vec3 v_Position;
+varying vec2 v_TexCoords;
 
 uniform vec3 u_LightColor;
 uniform vec3 u_LightPosition;
 uniform vec3 u_AmbientLight;
 uniform bool u_IsLighting;
+uniform bool u_UseTextures;
+uniform sampler2D u_Sampler;
 
 void main() {
   if (u_IsLighting) {
+    // Compute directional lighting
     vec3 normal = normalize(v_Normal);
     vec3 lightDirection = normalize(u_LightPosition - v_Position);
     float nDotL = max(dot(lightDirection, normal), 0.0);
 
-    vec3 diffuse = u_LightColor * v_Color.rgb * nDotL;
-    vec3 ambient = u_AmbientLight * v_Color.rgb;
+    vec3 diffuse;
+    if (u_UseTextures) {
+      vec4 TexColor = texture2D(u_Sampler, v_TexCoords);
 
+      diffuse = u_LightColor * TexColor.rgb * v_Color.rgb * nDotL;
+    } else {
+      diffuse = u_LightColor * v_Color.rgb * nDotL;
+    }
+
+    vec3 ambient = u_AmbientLight * v_Color.rgb;
+    
     gl_FragColor = vec4(diffuse + ambient, v_Color.a); 
   } 
   else 
@@ -39,10 +51,12 @@ const VERTEX_SHADER = `
 attribute vec4 a_Position;
 attribute vec4 a_Color;
 attribute vec4 a_Normal;
+attribute vec2 a_TexCoords;
 
 varying vec4 v_Color;
 varying vec3 v_Normal;
 varying vec3 v_Position;
+varying vec2 v_TexCoords;
 
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_MVPMatrix;
@@ -53,7 +67,8 @@ void main() {
 
   v_Color = a_Color;
   v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
-  v_Position = vec3(u_ModelMatrix * a_Position);
+  v_Position = vec3(u_ModelMatrix * a_Position); 
+  v_TexCoords = a_TexCoords;
 }
 `;
 
@@ -65,6 +80,7 @@ class Shape {
     this._size = size;
     this._colour = colour;
     this._rotation = [0, 0, 0];
+    this._texture = '';
 
     this._children = [];
   }
@@ -75,6 +91,10 @@ class Shape {
       (this._rotation[1] + y) % 360,
       (this._rotation[2] + z) % 360,
     ]
+  }
+
+  texture(textureUri) {
+    this._texture = textureUri;
   }
 
   getModelMatrix() {
@@ -127,6 +147,17 @@ class Cube extends Shape {
     ]);
   }
 
+  _textureCoords() {
+    return new Float32Array([
+      1.0, 1.0,    0.0, 1.0,   0.0, 0.0,   1.0, 0.0,  // v0-v1-v2-v3 front
+      0.0, 1.0,    0.0, 0.0,   1.0, 0.0,   1.0, 1.0,  // v0-v3-v4-v5 right
+      1.0, 0.0,    1.0, 1.0,   0.0, 1.0,   0.0, 0.0,  // v0-v5-v6-v1 up
+      1.0, 1.0,    0.0, 1.0,   0.0, 0.0,   1.0, 0.0,  // v1-v6-v7-v2 left
+      0.0, 0.0,    1.0, 0.0,   1.0, 1.0,   0.0, 1.0,  // v7-v4-v3-v2 down
+      0.0, 0.0,    1.0, 0.0,   1.0, 1.0,   0.0, 1.0   // v4-v7-v6-v5 back
+    ]);
+  }
+
   draw(scene, modelMatrix) {
     const thisNodeModelMatrix = this.getModelMatrix().multiply(modelMatrix);
 
@@ -135,7 +166,8 @@ class Cube extends Shape {
       this._verticies(), 
       this._indicies(),
       this._normals(),
-      this._colour);
+      this._colour,
+      {uri: this._texture, coords: this._textureCoords()});
   }
 }
 
@@ -249,7 +281,7 @@ const _initUniformMat4 = (gl, uniformId, mat4) => {
   gl.uniformMatrix4fv(uniformHandle, false, mat4.elements);
 };
 
-const _initUniformBoolean = (gl, uniformId, value) => {
+const _initUniformBit = (gl, uniformId, value) => {
   const uniformHandle = _getUniformHandle(gl, uniformId);
 
   gl.uniform1i(uniformHandle, value);
@@ -261,12 +293,52 @@ const _initUniformVec3 = (gl, uniformId, value) => {
   gl.uniform3f(uniformHandle, value[0], value[1], value[2]);
 }
 
+// --------------- Texture Manager
+const _loadTexture = (textureUri) => {
+  return new Promise(resolve => {
+    const img = new Image();
+
+    img.onload = () => resolve({uri: textureUri[0], img: img, status: 'ok'});
+    img.onerror = () => { throw new Error("failed to load image " + textureUri); }
+
+    img.src = textureUri;
+  });
+};
+
+class _TextureManager {
+  constructor() {
+    this._textures = {};
+  }
+
+  async loadTextures(gl, ...textureUris) {
+    const textureLoadPromises = await Promise.all(textureUris.map(_loadTexture));
+    
+    textureLoadPromises.forEach(loadedTexture => {
+      let glTexture = gl.createTexture();
+      glTexture.image = loadedTexture.img;
+      
+      this._textures[loadedTexture.uri] = glTexture;
+    });
+  }
+
+  getTexture(textureUri) {
+    const texture = this._textures[textureUri];
+    
+    if (texture === undefined) {
+      throw new Error("failed to load texture " + textureUri);
+    }
+
+    return texture;
+  }
+}
+
+
 // --------------- Scene object
 
 const _createProjectionMatrix = (aspectRatio) => {
   const projectionMatrix = new Matrix4();
-  projectionMatrix.setPerspective(30, aspectRatio, 1, 100);
-  return projectionMatrix;
+
+  return projectionMatrix.setPerspective(30, aspectRatio, 1, 100);;
 }
 
 const _calculateNormalMatrix = (modelMatrix) => {
@@ -285,16 +357,22 @@ class Scene {
     this._lookAt = [0, 0, -100];
 
     // For now we're only going to support a single point light.
-    this._lightPosition = [-1, 1, 3];
+    this._lightPosition = [0, 0, 15];
     this._lightColour = [0.6, 0.6, 0.6];
-    this._ambientLight = [0.2, 0.2, 0.2];
+    this._ambientLight = [0.3, 0.3, 0.3];
 
     this._gl = _createWebGLContext(canvas);
     this._projectionMatrix = _createProjectionMatrix(canvas.width / canvas.height);
+
     this._nodes = [];
+    this._textureManager = new _TextureManager();
 
     this._gl.enable(this._gl.DEPTH_TEST);
     this._gl.clear(this._gl.COLOR_DEPTH_BUFFER | this._gl.DEPTH_BUFFER_BIT);
+  }
+
+  loadTextures(...textureUris) {
+    this._textureManager.loadTextures(this._gl, textureUris);  
   }
 
   setBackgroundColor(r, g, b) {
@@ -338,7 +416,7 @@ class Scene {
   _initaliseLighting(modelMatrix) {
     const useLighting = modelMatrix !== undefined;
     
-    _initUniformBoolean(this._gl, 'u_IsLighting', useLighting);
+    _initUniformBit(this._gl, 'u_IsLighting', useLighting);
 
     if (!useLighting) { return; }
 
@@ -352,7 +430,40 @@ class Scene {
     _initUniformVec3(this._gl, 'u_AmbientLight', this._ambientLight);
   }
 
-  _drawElements(modelMatrix, verticies, indicies, normals, colour) {
+  _loadTextureIntoBuffer(texture) {
+    const glTexture = this._textureManager.getTexture(texture.uri);
+
+    _initArrayBuffer(this._gl, 'a_TexCoords', texture.coords, 2);
+
+    const gl = this._gl;
+
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
+
+    // Enable texture unit0
+    gl.activeTexture(gl.TEXTURE0);
+
+    // Bind the texture object to the target
+    gl.bindTexture(gl.TEXTURE_2D, glTexture);
+
+    // Set the texture image
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, glTexture.image);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+    _initUniformBit(this._gl, 'u_Sampler', 0);
+    _initUniformBit(this._gl, 'u_UseTextures', true);
+  }
+
+  _initaliseTextures(texture) { // texture = {texture, coords}
+    const hasTexture = texture.uri !== '';
+
+    _initUniformBit(this._gl, 'u_HasTexture', hasTexture);
+
+    if (hasTexture) {
+      this._loadTextureIntoBuffer(texture);
+    }
+  }
+
+  _drawElements(modelMatrix, verticies, indicies, normals, colour, texture) {
     const gl = this._gl;
     
     const colours = _repeatVector(colour, verticies.length/3);
@@ -362,9 +473,10 @@ class Scene {
     _initArrayBuffer(gl, 'a_Normal', normals, 3);
 
     _initIndiciesBuffer(gl, indicies);
-
+    
     this._initMVPMatrix(modelMatrix);
     this._initaliseLighting(modelMatrix);
+    this._initaliseTextures(texture);
 
     gl.drawElements(gl.TRIANGLES, indicies.length, gl.UNSIGNED_BYTE, 0);
   }

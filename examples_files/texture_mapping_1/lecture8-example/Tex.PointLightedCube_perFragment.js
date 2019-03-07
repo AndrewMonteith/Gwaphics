@@ -146,7 +146,8 @@ function main() {
     return false;
   }
 
-  Cubetexture.image = new Image();  // Create the image object
+  Cubetexture.image = document.getElementById("foobar"); 
+  Cubetexture.crossorigin = "anonymous"
   if (!Cubetexture.image) {
     console.log('Failed to create the image object');
     return false;
@@ -155,7 +156,7 @@ function main() {
   // Tell the browser to load an image
   // Register the event handler to be called on loading an image
   Cubetexture.image.onload = function(){ loadTexAndDraw(gl, n, Cubetexture, u_Sampler, u_UseTextures); };
-  Cubetexture.image.src = '../resources/sky.jpg';
+  loadTexAndDraw(gl, n, Cubetexture, u_Sampler, u_UseTextures);
 
 }
 
@@ -286,7 +287,7 @@ function loadTexAndDraw(gl, n, texture, u_Sampler, u_UseTextures) {
 
   // Assign u_Sampler to TEXTURE0
   gl.uniform1i(u_Sampler, 0);
-
+  console.log("draw");
   // Enable texture mapping
   gl.uniform1i(u_UseTextures, true);
 

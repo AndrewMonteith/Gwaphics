@@ -1,6 +1,6 @@
 const bindEvents = (scene, cube) => {
   const onKeyDown = keyEvent => {
-    switch(keyEvent.keyCode) {
+    switch (keyEvent.keyCode) {
       case 40: {
         cube.rotate(2, 0, 0);
         break;
@@ -25,16 +25,23 @@ const bindEvents = (scene, cube) => {
   document.addEventListener("keydown", onKeyDown);
 };
 
-const createScene = () => {
-  const scene = new Scene(document.getElementById('webpageCanvas'));
-  
-  const cube = new Cube([0, 0, 0], [1.5, 1.5, 1.5], [1, 0, 0]);
+const initalise3dEnvironment = (scene) => {
+  const cube = new Cube([0, 0, 0], [1.5, 1.5, 1.5], [1, 1, 1]);
   const axis = new Axis([1, 1, 1]);
-  
+
+  cube.texture("res/sky.jpg");
+
   scene.addNode(cube);
   scene.addNode(axis);
 
   bindEvents(scene, cube);
+};
+
+const createScene = () => {
+  const scene = new Scene(document.getElementById('webpageCanvas'));
+
+  scene.loadTextures("res/sky.jpg");
+  initalise3dEnvironment(scene);
 
   return scene;
 };
