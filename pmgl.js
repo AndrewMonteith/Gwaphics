@@ -75,12 +75,12 @@ void main() {
 // --------------- Shapes you can use in the scene
 
 class Shape {
-  constructor(position, size, colour) {
+  constructor(position, size, colour, texture) {
     this._position = position;
     this._size = size;
     this._colour = colour;
     this._rotation = [0, 0, 0];
-    this._texture = '';
+    this._texture = texture || '';
 
     this._children = [];
   }
@@ -110,8 +110,8 @@ class Shape {
 }
 
 class Cube extends Shape {
-  constructor(position, size, colour) {
-    super(position, size, colour);
+  constructor(position, size, colour, texture) {
+    super(position, size, colour, texture);
   }
 
   _verticies() {
