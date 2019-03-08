@@ -97,15 +97,37 @@ class Shape {
     this._texture = textureUri;
   }
 
-  getModelMatrix() {
+  add(node) {
+    this._children.push(node);
+  }
+
+  getHierachalMatrix() {
     let matrix = new Matrix4();
 
-    return matrix 
+    return matrix
       .setTranslate(this._position[0], this._position[1], this._position[2])
       .rotate(this._rotation[1], 0, 1, 0)
-      .rotate(this._rotation[0], 1, 0, 0)
-      .rotate(this._rotation[2], 0, 0, 1)
-      .scale(this._size[0], this._size[1], this._size[2]);
+      .rotate(this._rotation[2], 0, 0, 1)  
+      .rotate(this._rotation[0], 1, 0, 0);
+  }
+
+  getSizeMatrix() {
+    return (new Matrix4()).setScale(this._size[0], this._size[1], this._size[2]);
+  }
+  
+  // getModelMatrix() {
+  //   let matrix = new Matrix4();
+
+  //   return matrix 
+  //     .setTranslate(this._position[0], this._position[1], this._position[2])
+  //     .rotate(this._rotation[1], 0, 1, 0)
+  //     .rotate(this._rotation[0], 1, 0, 0)
+  //     .rotate(this._rotation[2], 0, 0, 1)
+  //     .scale(this._size[0], this._size[1], this._size[2]);
+  // }
+
+  draw(scene, hierachicalMatrix) {
+    this._children.forEach(node => node.draw(scene, hierachicalMatrix))
   }
 }
 
@@ -158,8 +180,9 @@ class Cube extends Shape {
     ]);
   }
 
-  draw(scene, modelMatrix) {
-    const thisNodeModelMatrix = this.getModelMatrix().multiply(modelMatrix);
+  draw(scene, hierachicalMatrix) {
+    const thisNodeHierachicalMatrix = hierachicalMatrix.multiply(this.getHierachalMatrix())
+    const thisNodeModelMatrix = this.getSizeMatrix().multiply(thisNodeHierachicalMatrix);
 
     scene._drawElements(
       thisNodeModelMatrix, 
@@ -168,6 +191,8 @@ class Cube extends Shape {
       this._normals(),
       this._colour,
       {uri: this._texture, coords: this._textureCoords()});
+
+    super.draw(scene, thisNodeHierachicalMatrix);
   }
 }
 
@@ -387,7 +412,7 @@ class Scene {
     this._cameraPos = [x, y, z];
   }
 
-  addNode(node) {
+  add(node) {
     this._nodes.push(node);
   }
 

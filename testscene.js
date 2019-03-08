@@ -27,12 +27,16 @@ const bindEvents = (scene, cube) => {
 
 const initalise3dEnvironment = (scene) => {
   const cube = new Cube([0, 0, 0], [1.5, 1.5, 1.5], [1, 1, 1], "res/sky.jpg");
+  const cube2 = new Cube([0, 2.5, 0], [3, 1, 1], [1, 0, 0]);
+
+  cube.add(cube2);
+
   const axis = new Axis([1, 1, 1]);
 
   // cube.texture("res/sky.jpg");
 
-  scene.addNode(cube);
-  scene.addNode(axis);
+  scene.add(cube);
+  scene.add(axis);
 
   bindEvents(scene, cube);
 };
