@@ -115,17 +115,6 @@ class Shape {
     return (new Matrix4()).setScale(this._size[0], this._size[1], this._size[2]);
   }
   
-  // getModelMatrix() {
-  //   let matrix = new Matrix4();
-
-  //   return matrix 
-  //     .setTranslate(this._position[0], this._position[1], this._position[2])
-  //     .rotate(this._rotation[1], 0, 1, 0)
-  //     .rotate(this._rotation[0], 1, 0, 0)
-  //     .rotate(this._rotation[2], 0, 0, 1)
-  //     .scale(this._size[0], this._size[1], this._size[2]);
-  // }
-
   draw(scene, hierachicalMatrix) {
     this._children.forEach(node => node.draw(scene, hierachicalMatrix))
   }
@@ -177,6 +166,68 @@ class Cube extends Shape {
       0.0, 0.0,    1.0, 0.0,   1.0, 1.0,   0.0, 1.0,  // v7-v4-v3-v2 down
       0.0, 0.0,    1.0, 0.0,   1.0, 1.0,   0.0, 1.0   // v4-v7-v6-v5 back
     ]);
+  }
+
+  draw(scene, hierachicalMatrix) {
+    const thisNodeHierachicalMatrix = hierachicalMatrix.multiply(this.getHierachalMatrix())
+    const thisNodeModelMatrix = this.getSizeMatrix().multiply(thisNodeHierachicalMatrix);
+
+    scene._drawElements(
+      thisNodeModelMatrix, 
+      this._verticies(), 
+      this._indicies(),
+      this._normals(),
+      this._colour,
+      {uri: this._texture, coords: this._textureCoords()});
+
+    super.draw(scene, thisNodeHierachicalMatrix);
+  }
+}
+
+class Prism extends Shape {
+  constructor(position, size, colour, texture) {
+    super(position, size, colour, texture);
+  }
+  
+  // reference diagram: prism.jpg
+  // v1-v2-v3
+  // v1-v3-v4-v5
+  // v1-v2-v6-v5
+  // v2-v3-v4-v6
+  // v5-v6-v4
+
+  _verticies() {
+    return new Float32Array([
+      -0.5, -0.5, 0.5,  0.5, -0.5, 0.5,  0.5, 0.5, 0.5, // v1-v2-v3
+      -0.5, -0.5, 0.5,  0.5, 0.5, 0.5,  0.5, 0.5, -0.5,  -0.5, -0.5, -0.5, // v1-v3-v4-v5
+      -0.5, -0.5, 0.5,  0.5, -0.5, 0.5, 0.5, -0.5, -0.5,  -0.5, -0.5, -0.5, // v1-v2-v6-v5
+      0.5, -0.5, 0.5,  0.5, 0.5, 0.5,  0.5, 0.5, -0.5,  0.5, -0.5, -0.5, // v2-v3-v4-v6
+      -0.5, -0.5, -0.5,  0.5, -0.5, -0.5,  0.5, 0.5, -0.5 // v5-v6-v4
+    ]);
+  }
+
+  _normals() {
+    return new Float32Array([
+        0, 0, 1,  0, 0, 1,  0, 0, 1,
+        -1, 1, 0,  -1, 1, 0,  -1, 1, 0,  -1, 1, 0,
+        0, -1, 0,  0, -1, 0,  0, -1, 0,  0, -1, 0,
+        1, 0, 0,  1, 0, 0,  1, 0, 0,  1, 0, 0,
+        0, 0, -1,  0, 0, -1,  0, 0, -1
+    ]);
+  }
+
+  _indicies() {
+    return new Uint8Array([
+      0, 1, 2, 
+      3, 4, 5,   3, 5, 6,
+      7, 8, 9,   7, 9, 10,
+      11, 12, 13, 11, 13, 14,
+      15, 16, 17  
+    ]);
+  }
+
+  _textureCoords() {
+    return undefined;
   }
 
   draw(scene, hierachicalMatrix) {
@@ -475,13 +526,12 @@ class Scene {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 
     _initUniformBit(this._gl, 'u_Sampler', 0);
-    _initUniformBit(this._gl, 'u_UseTextures', true);
   }
 
   _initaliseTextures(texture) { // texture = {texture, coords}
     const hasTexture = texture.uri !== '';
-
-    _initUniformBit(this._gl, 'u_HasTexture', hasTexture);
+    
+    _initUniformBit(this._gl, 'u_UseTextures', hasTexture);
 
     if (hasTexture) {
       this._loadTextureIntoBuffer(texture);
@@ -492,6 +542,10 @@ class Scene {
     const gl = this._gl;
     
     const colours = _repeatVector(colour, verticies.length/3);
+    console.log(verticies);
+    console.log(colours);
+    console.log(normals);
+    console.log(indicies);
 
     _initArrayBuffer(gl, 'a_Position', verticies, 3);
     _initArrayBuffer(gl, 'a_Color', colours, 3);
