@@ -188,7 +188,7 @@ class Prism extends Shape {
   constructor(position, size, colour, texture) {
     super(position, size, colour, texture);
   }
-  
+
   // reference diagram: prism.jpg
   // v1-v2-v3
   // v1-v3-v4-v5
@@ -227,7 +227,13 @@ class Prism extends Shape {
   }
 
   _textureCoords() {
-    return undefined;
+    return new Float32Array([
+    0, 0,  1, 0,  1, 1,
+    1, 0,  1, 1,  0, 1,  0, 0,
+    1, 0,  1, 1,  0, 1,  0, 0,
+    1, 0,  1, 1,  0, 1,  0, 0,
+    0, 0,  1, 0,  1, 1
+    ]);
   }
 
   draw(scene, hierachicalMatrix) {

@@ -31,7 +31,7 @@ const initalise3dEnvironment = (scene) => {
   // cube.add(cube2);
   // scene.add(cube);
 
-  const prism = new Prism([0, 0, 0], [1, 1, 1], [0.3, 0.3, 0.3]);
+  const prism = new Prism([0, 0, 0], [3, 3, 3], [1, 1, 1], "res/slate.jpg");
 
   scene.add(prism);
 
@@ -45,7 +45,7 @@ const initalise3dEnvironment = (scene) => {
 const createScene = () => {
   const scene = new Scene(document.getElementById('webpageCanvas'));
 
-  scene.loadTextures("res/sky.jpg");
+  scene.loadTextures("res/slate.jpg");
   initalise3dEnvironment(scene);
 
   return scene;
