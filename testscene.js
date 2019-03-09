@@ -27,7 +27,7 @@ const bindEvents = (scene, cube) => {
 
 const initalise3dEnvironment = (scene) => {
   const cube = new Cube([0, 0, 0], [1.5, 1.5, 1.5], [1, 1, 1], "res/sky.jpg");
-  const cube2 = new Cube([0, 2.5, 0], [3, 1, 1], [1, 0, 0]);
+  const cube2 = new Cube([0, 1.25, 0], [1, 1, 1], [1, 0, 0]);
 
   cube.add(cube2);
 
