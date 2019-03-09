@@ -26,26 +26,23 @@ const bindEvents = (scene, shape) => {
 };
 
 const initalise3dEnvironment = (scene) => {
-  // const cube = new Cube([0, 0, 0], [1.5, 1.5, 1.5], [1, 1, 1], "res/sky.jpg");
-  // const cube2 = new Cube([0, 1.25, 0], [1, 1, 1], [1, 0, 0]);
-  // cube.add(cube2);
-  // scene.add(cube);
+  const cube = new Cube([0, 0, 0], [1.5, 1.5, 1.5], [1, 1, 1], "res/sky.jpg");
+  const prism = new Prism([0, 1, 0], [1.5, 1.5, 1.5], [1, 1, 1], "res/slate.jpg");
 
-  const prism = new Prism([0, 0, 0], [3, 3, 3], [1, 1, 1], "res/slate.jpg");
-
-  scene.add(prism);
+  cube.add(prism); 
+  scene.add(cube);
 
   const axis = new Axis([1, 1, 1]);
 
   scene.add(axis);
 
-  bindEvents(scene, prism);
+  bindEvents(scene, cube);
 };
 
 const createScene = () => {
   const scene = new Scene(document.getElementById('webpageCanvas'));
 
-  scene.loadTextures("res/slate.jpg");
+  scene.loadTextures(['res/sky.jpg', 'res/slate.jpg']);
   initalise3dEnvironment(scene);
 
   return scene;

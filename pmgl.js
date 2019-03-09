@@ -73,9 +73,18 @@ void main() {
 `;
 
 // --------------- Shapes you can use in the scene
+const checkLen = (arg, length) => {
+  if (arg.length !== length) {
+    throw new Error("argument length error, expected " + length);
+  }
+}
 
 class Shape {
   constructor(position, size, colour, texture) {
+    checkLen(position, 3);
+    checkLen(size, 3);
+    checkLen(colour, 3);
+
     this._position = position;
     this._size = size;
     this._colour = colour;
@@ -124,6 +133,11 @@ class Cube extends Shape {
   constructor(position, size, colour, texture) {
     super(position, size, colour, texture);
   }
+
+  _name() {
+    return "Cube";
+  }
+
   _verticies() {
     return new Float32Array([
       0.5, 0.5, 0.5,  -0.5, 0.5, 0.5,  -0.5,-0.5, 0.5,   0.5,-0.5, 0.5, // v0-v1-v2-v3 front
@@ -171,7 +185,7 @@ class Cube extends Shape {
   draw(scene, hierachicalMatrix) {
     const thisNodeHierachicalMatrix = hierachicalMatrix.multiply(this.getHierachalMatrix())
     const thisNodeModelMatrix = this.getSizeMatrix().multiply(thisNodeHierachicalMatrix);
-
+    
     scene._drawElements(
       thisNodeModelMatrix, 
       this._verticies(), 
@@ -179,7 +193,7 @@ class Cube extends Shape {
       this._normals(),
       this._colour,
       {uri: this._texture, coords: this._textureCoords()});
-
+  
     super.draw(scene, thisNodeHierachicalMatrix);
   }
 }
@@ -195,6 +209,10 @@ class Prism extends Shape {
   // v1-v2-v6-v5
   // v2-v3-v4-v6
   // v5-v6-v4
+
+  _name() {
+    return "Prism";
+  }
 
   _verticies() {
     return new Float32Array([
@@ -380,9 +398,9 @@ const _loadTexture = (textureUri) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
 
-    img.onload = () => resolve({uri: textureUri[0], img: img, status: 'ok'});
+    img.onload = () => resolve({uri: textureUri, img: img, status: 'ok'});
     img.onerror = () => { throw new Error("failed to load image " + textureUri); }
-
+    
     img.src = textureUri;
   });
 };
@@ -392,7 +410,7 @@ class _TextureManager {
     this._textures = {};
   }
 
-  async loadTextures(gl, ...textureUris) {
+  async loadTextures(gl, textureUris) {
     const textureLoadPromises = await Promise.all(textureUris.map(_loadTexture));
     
     textureLoadPromises.forEach(loadedTexture => {
@@ -453,7 +471,7 @@ class Scene {
     this._gl.clear(this._gl.COLOR_DEPTH_BUFFER | this._gl.DEPTH_BUFFER_BIT);
   }
 
-  loadTextures(...textureUris) {
+  loadTextures(textureUris) {
     this._textureManager.loadTextures(this._gl, textureUris);  
   }
 
@@ -548,11 +566,7 @@ class Scene {
     const gl = this._gl;
     
     const colours = _repeatVector(colour, verticies.length/3);
-    console.log(verticies);
-    console.log(colours);
-    console.log(normals);
-    console.log(indicies);
-
+    
     _initArrayBuffer(gl, 'a_Position', verticies, 3);
     _initArrayBuffer(gl, 'a_Color', colours, 3);
     _initArrayBuffer(gl, 'a_Normal', normals, 3);
