@@ -30,6 +30,84 @@ const bindEvents = (scene, shape) => {
   document.addEventListener("keydown", onKeyDown);
 };
 
+
+/*
+  Paneled window layer near the top of the building
+*/
+const buildGlassLayer = () => {
+  const cornerWidths = 0.25;
+  const buildCornerLayers = () => {
+    const d = 4 - cornerWidths/2;
+
+    return [
+      cube([d, 2.975, d], [0.25, 1, 0.25], [0, 0, 1]),
+      cube([-d, 2.975, d], [0.25, 1, 0.25], [0, 0, 1]),
+      cube([d, 2.975, -d], [0.25, 1, 0.25], [0, 0, 1]),
+      cube([-d, 2.975, -d], [0.25, 1, 0.25], [0, 0, 1])
+    ]; 
+  };
+  
+  const buildOtherPanels = () => { 
+    const panels = [];
+
+    const x0 = -3.5, z0 = 3.875;
+
+    for (let i = 0; i < 15; ++i) {
+      const horizontalOffset = x0 + 0.5*i;
+
+      for (let j = 0; j < 4; ++j) {
+        const rotation = j*90;
+
+        panels.push(cube([horizontalOffset, 2.975, z0], [0.5, 1, 0.25], [0, 1, 0]).rotate(0, rotation, 0));
+      }
+    }
+    
+    return panels;  
+  };
+
+  return [
+    ...buildCornerLayers(),
+    ...buildOtherPanels(),
+  ]
+};
+
+
+const buildRoofLayer = () => {
+  
+  const outsideRoofLayer = () => {
+    return [];
+  }
+
+
+  return [
+    cube([0, 3.615, 0], [9.5, 0.25, 9.5], [0, 1, 1]),
+    ...outsideRoofLayer()
+  ]
+}
+
+/*
+  Main layers of the building.
+*/
+const buildMainLayers = () => {
+  return [
+    cube([0, 0.375, 0], [8, 0.35, 8], [0.7, 0.7, 0.7]),
+    cube([0, 1.1, 0], [8, 1.1, 8], [1, 0.7, 0.7]),
+    cube([0, 1.725, 0], [8, 0.15, 8], [1, 0, 0]),
+    cube([0, 1.875, 0], [8, 0.15, 8], [0, 1, 0]),
+    cube([0, 2.145, 0], [8, 0.40, 8], [0.5, 0.5, 0.5]),
+    cube([0, 2.4, 0], [8, 0.15, 8], [0.6, 0.6, 0.6]),
+    ...buildGlassLayer(),
+    ...buildRoofLayer()
+  ];
+};
+
+const rowanHouse = () => {
+  return [
+    cube([0, 0, 0], [12, 0.35, 12], [0.5, 0.5, 0.5]).id("root").children(buildMainLayers())
+  ];
+}
+
+
 const createScene = () => {
   // const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'),
   // [
@@ -38,14 +116,7 @@ const createScene = () => {
   //   ])
   // ])
 
-  const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'),
-  [
-    cube([0, 0, 0], [12, 0.3, 12], [0.5, 0.5, 0.5]).id("root").children([
-      cube([0, 0.55, 0], [8, 0.8, 8], [0.7, 0.7, 0.7]),
-      cube([0, 1.35, 0], [8, 0.8, 8], [0.7, 0.7, 0.7]),
-      
-    ])
-  ]);
+  const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
   scene.loadTextures(['res/sky.jpg', 'res/slate.jpg']);
   bindEvents(scene, idObjects["root"]);

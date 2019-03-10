@@ -127,14 +127,24 @@ class Shape {
     this._children.push(node);
   }
 
+  // getHierachalMatrix() {
+  //   let matrix = new Matrix4();
+
+  //   return matrix
+  //     .setTranslate(this._position[0], this._position[1], this._position[2])
+  //     .rotate(this._rotation[1], 0, 1, 0)
+  //     .rotate(this._rotation[2], 0, 0, 1)  
+  //     .rotate(this._rotation[0], 1, 0, 0);
+  // }
+
   getHierachalMatrix() {
     let matrix = new Matrix4();
 
     return matrix
-      .setTranslate(this._position[0], this._position[1], this._position[2])
       .rotate(this._rotation[1], 0, 1, 0)
       .rotate(this._rotation[2], 0, 0, 1)  
-      .rotate(this._rotation[0], 1, 0, 0);
+      .rotate(this._rotation[0], 1, 0, 0)
+      .translate(this._position[0], this._position[1], this._position[2]);
   }
 
   getSizeMatrix() {
@@ -457,13 +467,13 @@ class Scene {
   constructor(canvas) {
     this._backgroundColor = [0.8, 0.8, 0.8];
 
-    this._cameraPos = [0, 8, 30];
+    this._cameraPos = [0, 6, 32];
     this._lookAt = [0, 0, -10];
 
     // For now we're only going to support a single point light.
-    this._lightPosition = [0, 0, 15];
+    this._lightPosition = [0, 6, 20];  // Temp?s
     this._lightColour = [0.6, 0.6, 0.6];
-    this._ambientLight = [0.3, 0.3, 0.3];
+    this._ambientLight = [0.25, 0.25, 0.25];
 
     this._gl = _createWebGLContext(canvas);
     this._projectionMatrix = _createProjectionMatrix(canvas.width / canvas.height);
@@ -640,6 +650,12 @@ const _createProxyObject = (rawObject) => {
     id: id => {
       proxyObject._id = id;
       
+      return proxyObject;
+    },
+
+    rotate: (x, y, z) => {
+      rawObject.rotate(x, y, z);
+
       return proxyObject;
     },
 
