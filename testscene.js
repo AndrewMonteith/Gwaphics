@@ -73,14 +73,20 @@ const buildGlassLayer = () => {
 
 
 const buildRoofLayer = () => {
-  
   const outsideRoofLayer = () => {
-    return [];
+    const thickness = 0.3, length = 10.55;
+    const d = 5 + thickness/2;
+    return [
+      cube([0, 3.555, d], [length, 0.15, thickness], [0, 0, 0]),
+      cube([0, 3.555, -d], [length, 0.15, thickness], [0, 0, 0]),
+      cube([0, 3.555, d], [length, 0.15, thickness], [0, 0, 0]).rotate(0, 90, 0),
+      cube([0, 3.555, -d], [length, 0.15, thickness], [0, 0, 0]).rotate(0, 90, 0)
+    ]
   }
 
 
   return [
-    cube([0, 3.615, 0], [9.5, 0.25, 9.5], [0, 1, 1]),
+    cube([0, 3.555, 0], [10, 0.15, 10], [0, 1, 1]),
     ...outsideRoofLayer()
   ]
 }
