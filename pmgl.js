@@ -357,6 +357,12 @@ const _initArrayBuffer = (gl, attributeId, data, elemsPerVal) => {
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
 };
 
+const _disableArrayBuffer = (gl, attributeId) => {
+  const attributeHandle = _getAttributeHandle(gl, attributeId);
+
+  gl.disableVertexAttribArray(attributeHandle);
+};
+
 const _initIndiciesBuffer = (gl, indicies) => {
   const buffer = _createBuffer(gl);
 
@@ -559,6 +565,8 @@ class Scene {
 
     if (hasTexture) {
       this._loadTextureIntoBuffer(texture);
+    } else {
+      _disableArrayBuffer(this._gl, 'a_TexCoords');
     }
   }
 
