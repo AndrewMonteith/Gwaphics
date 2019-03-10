@@ -142,7 +142,7 @@ class Shape {
   }
   
   draw(scene, hierachicalMatrix) {
-    this._children.forEach(node => node.draw(scene, hierachicalMatrix))
+    this._children.forEach(node => node.draw(scene, _copyMatrix(hierachicalMatrix)));
   }
 }
 
@@ -457,8 +457,8 @@ class Scene {
   constructor(canvas) {
     this._backgroundColor = [0.8, 0.8, 0.8];
 
-    this._cameraPos = [0, 8, 60];
-    this._lookAt = [0, 0, -100];
+    this._cameraPos = [0, 8, 30];
+    this._lookAt = [0, 0, -10];
 
     // For now we're only going to support a single point light.
     this._lightPosition = [0, 0, 15];

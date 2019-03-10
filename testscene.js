@@ -31,12 +31,21 @@ const bindEvents = (scene, shape) => {
 };
 
 const createScene = () => {
+  // const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'),
+  // [
+  //   cube([0, 0, 0], [4, 4, 4], [1, 1, 1], 'res/sky.jpg').id("root").children([
+  //     prism([0, 4, 0], [4, 4, 4], [1, 1, 1], 'res/slate.jpg')
+  //   ])
+  // ])
+
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'),
   [
-    cube([0, 0, 0], [4, 4, 4], [1, 1, 1], 'res/sky.jpg').id("root").children([
-      prism([0, 4, 0], [4, 4, 4], [1, 1, 1], 'res/slate.jpg')
+    cube([0, 0, 0], [12, 0.3, 12], [0.5, 0.5, 0.5]).id("root").children([
+      cube([0, 0.55, 0], [8, 0.8, 8], [0.7, 0.7, 0.7]),
+      cube([0, 1.35, 0], [8, 0.8, 8], [0.7, 0.7, 0.7]),
+      
     ])
-  ])
+  ]);
 
   scene.loadTextures(['res/sky.jpg', 'res/slate.jpg']);
   bindEvents(scene, idObjects["root"]);
