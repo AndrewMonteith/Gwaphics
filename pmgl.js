@@ -438,7 +438,6 @@ class _TextureManager {
   }
 }
 
-
 // --------------- Scene object
 
 const _createProjectionMatrix = (aspectRatio) => {
@@ -457,9 +456,9 @@ const _calculateNormalMatrix = (modelMatrix) => {
 
 class Scene {
   constructor(canvas) {
-    this._backgroundColor = [0, 0, 0];
+    this._backgroundColor = [0.8, 0.8, 0.8];
 
-    this._cameraPos = [0, 0, 15];
+    this._cameraPos = [0, 8, 60];
     this._lookAt = [0, 0, -100];
 
     // For now we're only going to support a single point light.
@@ -625,3 +624,51 @@ class Scene {
     this._drawNodes();
   }
 }
+
+/*
+  Scene Consturctor Object
+  Basically a builder pattern that reduces boilerplate when making large 3d scenes.
+*/
+
+const _createProxyObject = (rawObject) => {
+  const proxyObject = {
+    children: nodes => {
+      proxyObject.nodes = nodes;
+
+      return proxyObject;
+    },
+
+    id: id => {
+      proxyObject._id = id;
+      
+      return proxyObject;
+    },
+
+    toSceneObject: (idObjects) => {
+      if (proxyObject._id) {
+        idObjects[proxyObject._id] = rawObject;
+      }
+
+      if (proxyObject.nodes) {
+        proxyObject.nodes.forEach(node => rawObject.add(node.toSceneObject()));
+      }
+
+      return rawObject;
+    }
+  }
+
+  return proxyObject;
+}
+
+const cube = (position, size, colour, texture) => _createProxyObject(new Cube(position, size, colour, texture));
+const prism = (position, size, colour, texture) => _createProxyObject(new Prism(position, size, colour, texture));
+
+
+const buildScene = (cavnas, nodes) => {
+  const scene = new Scene(cavnas), idObjects = {};
+  nodes.forEach(node => {
+    scene.add(node.toSceneObject(idObjects));
+  });
+
+  return [scene, idObjects];
+};

@@ -1,3 +1,8 @@
+/*
+  Construction of Mountjoy House as seen here:
+  https://www.google.com/maps/@54.7645956,-1.5723251,2a,75y,194.28h,83.81t/data=!3m6!1e1!3m4!1sQ33hJoKTtihha2HTjPOxJQ!2e0!7i13312!8i6656
+*/
+
 const bindEvents = (scene, shape) => {
   const onKeyDown = keyEvent => {
     switch (keyEvent.keyCode) {
@@ -25,25 +30,16 @@ const bindEvents = (scene, shape) => {
   document.addEventListener("keydown", onKeyDown);
 };
 
-const initalise3dEnvironment = (scene) => {
-  const cube = new Cube([0, 0, 0], [1.5, 1.5, 1.5], [1, 1, 1]);
-  const prism = new Prism([0, 1, 0], [1.5, 1.5, 1.5], [1, 1, 1], "res/slate.jpg");
-
-  cube.add(prism); 
-  scene.add(cube);
-
-  const axis = new Axis([1, 1, 1]);
-
-  scene.add(axis);
-
-  bindEvents(scene, cube);
-};
-
 const createScene = () => {
-  const scene = new Scene(document.getElementById('webpageCanvas'));
+  const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'),
+  [
+    cube([0, 0, 0], [2, 2, 2], [1, 1, 1], 'res/sky.jpg').id("root").children([
+      prism([0, 1, 0], [2, 2, 2], [1, 1, 1], 'res/slate.jpg')
+    ])
+  ])
 
   scene.loadTextures(['res/sky.jpg', 'res/slate.jpg']);
-  initalise3dEnvironment(scene);
+  bindEvents(scene, idObjects["root"]);
 
   return scene;
 };
