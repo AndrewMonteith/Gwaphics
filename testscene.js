@@ -33,8 +33,8 @@ const bindEvents = (scene, shape) => {
 const createScene = () => {
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'),
   [
-    cube([0, 0, 0], [2, 2, 2], [1, 1, 1], 'res/sky.jpg').id("root").children([
-      prism([0, 1, 0], [2, 2, 2], [1, 1, 1], 'res/slate.jpg')
+    cube([0, 0, 0], [4, 4, 4], [1, 1, 1], 'res/sky.jpg').id("root").children([
+      prism([0, 4, 0], [4, 4, 4], [1, 1, 1], 'res/slate.jpg')
     ])
   ])
 

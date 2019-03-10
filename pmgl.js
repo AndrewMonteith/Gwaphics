@@ -79,6 +79,23 @@ const checkLen = (arg, length) => {
   }
 }
 
+const _copyMatrix = (matrix) => (new Matrix4()).set(matrix);
+
+const _drawElements = (scene, shape, hierachicalMatrix) => {
+  const thisNodeHierachicalMatrix = hierachicalMatrix.multiply(shape.getHierachalMatrix());
+  const thisNodeModelMatrix = _copyMatrix(thisNodeHierachicalMatrix).multiply(shape.getSizeMatrix());
+  
+  scene._drawElements(
+    thisNodeModelMatrix, 
+    shape._verticies(), 
+    shape._indicies(),
+    shape._normals(),
+    shape._colour,
+    {uri: shape._texture, coords: shape._textureCoords()});
+    
+  return thisNodeHierachicalMatrix;
+};
+
 class Shape {
   constructor(position, size, colour, texture) {
     checkLen(position, 3);
@@ -183,18 +200,9 @@ class Cube extends Shape {
   }
 
   draw(scene, hierachicalMatrix) {
-    const thisNodeHierachicalMatrix = hierachicalMatrix.multiply(this.getHierachalMatrix())
-    const thisNodeModelMatrix = this.getSizeMatrix().multiply(thisNodeHierachicalMatrix);
+    const newHierachicalMatrix = _drawElements(scene, this, hierachicalMatrix);
     
-    scene._drawElements(
-      thisNodeModelMatrix, 
-      this._verticies(), 
-      this._indicies(),
-      this._normals(),
-      this._colour,
-      {uri: this._texture, coords: this._textureCoords()});
-  
-    super.draw(scene, thisNodeHierachicalMatrix);
+    super.draw(scene, newHierachicalMatrix);
   }
 }
 
@@ -255,18 +263,9 @@ class Prism extends Shape {
   }
 
   draw(scene, hierachicalMatrix) {
-    const thisNodeHierachicalMatrix = hierachicalMatrix.multiply(this.getHierachalMatrix())
-    const thisNodeModelMatrix = this.getSizeMatrix().multiply(thisNodeHierachicalMatrix);
-
-    scene._drawElements(
-      thisNodeModelMatrix, 
-      this._verticies(), 
-      this._indicies(),
-      this._normals(),
-      this._colour,
-      {uri: this._texture, coords: this._textureCoords()});
-
-    super.draw(scene, thisNodeHierachicalMatrix);
+    const newHierachicalMatrix = _drawElements(scene, this, hierachicalMatrix);
+    
+    super.draw(scene, newHierachicalMatrix);
   }
 }
 
