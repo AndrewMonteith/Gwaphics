@@ -3,24 +3,70 @@
   https://www.google.com/maps/@54.7645956,-1.5723251,2a,75y,194.28h,83.81t/data=!3m6!1e1!3m4!1sQ33hJoKTtihha2HTjPOxJQ!2e0!7i13312!8i6656
 */
 
-const bindEvents = (scene, shape) => {
+const makeModelMoveable = (scene, idObjects) => {
+  const root = idObjects['root'];
+
+  const keyCodes = {
+    LeftArrow: 37,
+    UpArrow: 38,
+    RightArrow: 39,
+    DownArrow: 40,
+
+    Q: 81,
+    E: 69,
+
+    W: 87,
+    S: 83,
+
+    A: 65,
+    D: 68
+  }
+
+  // Up Rotation: root.rotate(-angle, 0, 0)
+  // Down Rotation: root.rotate(angle, 0, 0);
+
   const onKeyDown = keyEvent => {
-    const angle = 10;
+    const angle = 2;
     switch (keyEvent.keyCode) {
-      case 40: {
-        shape.rotate(angle, 0, 0);
+      case keyCodes.W: {
+        scene.offsetCameraPos(0, 0, -1);
         break;
       };
-      case 38: {
-        shape.rotate(-angle, 0, 0)
+      case keyCodes.S: {
+        scene.offsetCameraPos(0, 0, 1);
         break;
       };
-      case 39: {
-        shape.rotate(0, angle, 0);
+      case keyCodes.A: {
+        scene.offsetCameraPos(-1, 0, 0);
         break;
       };
-      case 37: {
-        shape.rotate(0, -angle, 0);
+      case keyCodes.D: {
+        scene.offsetCameraPos(1, 0, 0);
+        break;
+      };
+      case keyCodes.Q: {
+        scene.offsetCameraPos(0, 1, 0);
+        break;
+      };
+      case keyCodes.E: {
+        scene.offsetCameraPos(0, -1, 0);
+        break;
+      };
+
+      case keyCodes.LeftArrow: {
+        root.rotate(0, -angle, 0);
+        break;
+      };
+      case keyCodes.RightArrow: {
+        root.rotate(0, angle, 0)
+        break;
+      };
+      case keyCodes.UpArrow: {
+        root.translate(0, 0, -1);
+        break;
+      };
+      case keyCodes.DownArrow: {
+        root.translate(0, 0, 1);
         break;
       };
     }
@@ -37,7 +83,7 @@ const bindEvents = (scene, shape) => {
 */
 const buildGlassLayer = () => {
   const cornerWidths = 0.25;
-  const buildCornerLayers = () => {
+  const buildCornerWindows = () => {
     const d = 4 - cornerWidths/2;
     const createCorner = pos => cube(pos, [0.25, 1, 0.25], [0.6, 0.6, 0.6]).texture('res/window.jpg', 1, 1);
 
@@ -49,7 +95,7 @@ const buildGlassLayer = () => {
     ]; 
   };
   
-  const buildOtherPanels = () => { 
+  const buildCentralWindows = () => { 
     const panels = [];
 
     const x0 = -3.5, z0 = 3.875;
@@ -66,8 +112,8 @@ const buildGlassLayer = () => {
   };
 
   return [
-    ...buildCornerLayers(),
-    ...buildOtherPanels(),
+    ...buildCornerWindows(),
+    ...buildCentralWindows(),
   ]
 };
 
@@ -86,13 +132,13 @@ const buildRoofLayer = () => {
 
 
   return [
-    cube([0, 3.555, 0], [10, 0.15, 10], [0, 1, 1]),
+    cube([0, 3.555, 0], [10, 0.15, 10], [0.8, 0.8, 0.6]),
     ...outsideRoofLayer()
   ]
 }
 
 /*
-  Main layers of the building.
+  Main brick layers of the building.
 */
 const buildMainLayers = () => {
   return [
@@ -107,18 +153,37 @@ const buildMainLayers = () => {
   ];
 };
 
+const buildFrontEntrace = () => {
+  const buildFrontDoor = () => {
+    return [
+      cube([0, 0.4, 5.35], [0.3, 2.25, 0.15], [1, 0, 0]),
+    ]
+  }
+
+  const buildSidePanels = () => [];
+
+  return [
+    cube([0, 1.6, 4.25], [1.75, 0.225, 2.25], [0.3, 0.3, 0.3]),
+    ...buildFrontDoor(),
+    ...buildSidePanels()
+  ]
+};
+
 const rowanHouse = () => {
   return [
-    cube([0, 0, 0], [12, 0.35, 12], [0.5, 0.5, 0.5]).id("root").children(buildMainLayers())
+    cube([0, 0, 0], [15, 0.35, 15], [0.5, 0.5, 0.5]).id("root").children([
+      ...buildMainLayers(),
+      ...buildFrontEntrace()
+    ])
   ];
 }
-
 
 const createScene = () => {
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
   scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg']);
-  bindEvents(scene, idObjects["root"]);
+  
+  makeModelMoveable(scene, idObjects);
 
   return scene;
 };

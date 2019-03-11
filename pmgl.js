@@ -79,6 +79,12 @@ const checkLen = (arg, length) => {
   }
 }
 
+const addVector = (vec, x, y, z) => [
+  vec[0] + x,
+  vec[1] + y,
+  vec[2] + z
+]
+
 const _copyMatrix = (matrix) => (new Matrix4()).set(matrix);
 
 const _drawElements = (scene, shape, hierachicalMatrix) => {
@@ -117,6 +123,10 @@ class Shape {
       (this._rotation[1] + y) % 360,
       (this._rotation[2] + z) % 360,
     ]
+  }
+
+  translate(x, y, z) {
+    this._position = addVector(this._position, x, y, z)
   }
 
   texture(textureUri, multiplierX, multiplierY) {
@@ -467,13 +477,13 @@ class Scene {
   constructor(canvas) {
     this._backgroundColor = [0, 0, 0];
 
-    this._cameraPos = [0, 6, 20];
+    this._cameraPos = [0, 6, 22];
     this._lookAt = [0, 0, -10];
 
     // For now we're only going to support a single point light.
     this._lightPosition = [0, 6, 18];  // Temp?s
     this._lightColour = [0.6, 0.6, 0.6];
-    this._ambientLight = [0.1, 0.1, 0.1];
+    this._ambientLight = [0.3, 0.3, 0.3];
 
     this._gl = _createWebGLContext(canvas);
     this._projectionMatrix = _createProjectionMatrix(canvas.width / canvas.height);
@@ -497,8 +507,8 @@ class Scene {
     this._lookAt = [lookatX, lookatY, lookatZ];
   }
 
-  changeCameraPos(x, y, z) {
-    this._cameraPos = [x, y, z];
+  offsetCameraPos(x, y, z) {
+    this._cameraPos = addVector(this._cameraPos, x, y, z);
   }
 
   add(node) {
