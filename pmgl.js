@@ -659,6 +659,12 @@ const _createProxyObject = (rawObject) => {
       return proxyObject;
     },
 
+    texture: (tex) => {
+      rawObject.texture(tex);
+
+      return proxyObject;
+    },
+
     toSceneObject: (idObjects) => {
       if (proxyObject._id) {
         idObjects[proxyObject._id] = rawObject;

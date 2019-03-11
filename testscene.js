@@ -5,21 +5,22 @@
 
 const bindEvents = (scene, shape) => {
   const onKeyDown = keyEvent => {
+    const angle = 10;
     switch (keyEvent.keyCode) {
       case 40: {
-        shape.rotate(2, 0, 0);
+        shape.rotate(angle, 0, 0);
         break;
       };
       case 38: {
-        shape.rotate(-2, 0, 0)
+        shape.rotate(-angle, 0, 0)
         break;
       };
       case 39: {
-        shape.rotate(0, 2, 0);
+        shape.rotate(0, angle, 0);
         break;
       };
       case 37: {
-        shape.rotate(0, -2, 0);
+        shape.rotate(0, -angle, 0);
         break;
       };
     }
@@ -55,9 +56,7 @@ const buildGlassLayer = () => {
     for (let i = 0; i < 15; ++i) {
       const horizontalOffset = x0 + 0.5*i;
 
-      for (let j = 0; j < 4; ++j) {
-        const rotation = j*90;
-
+      for (let rotation = 0; rotation < 360; rotation += 90) {
         panels.push(cube([horizontalOffset, 2.975, z0], [0.5, 1, 0.25], [0, 1, 0]).rotate(0, rotation, 0));
       }
     }
@@ -96,7 +95,7 @@ const buildRoofLayer = () => {
 */
 const buildMainLayers = () => {
   return [
-    cube([0, 0.375, 0], [8, 0.35, 8], [0.7, 0.7, 0.7]),
+    cube([0, 0.375, 0], [8, 0.35, 8], [0.7, 0.7, 0.7]).texture("res/redbrick.jpg"),
     cube([0, 1.1, 0], [8, 1.1, 8], [1, 0.7, 0.7]),
     cube([0, 1.725, 0], [8, 0.15, 8], [1, 0, 0]),
     cube([0, 1.875, 0], [8, 0.15, 8], [0, 1, 0]),
@@ -124,7 +123,7 @@ const createScene = () => {
 
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
-  scene.loadTextures(['res/sky.jpg', 'res/slate.jpg']);
+  scene.loadTextures(['res/redbrick.jpg']);
   bindEvents(scene, idObjects["root"]);
 
   return scene;
