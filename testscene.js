@@ -26,30 +26,31 @@ const makeModelMoveable = (scene, idObjects) => {
   // Down Rotation: root.rotate(angle, 0, 0);
 
   const onKeyDown = keyEvent => {
-    const angle = 2;
+    const angle = 5;
+    const dPos = 0.5;
     switch (keyEvent.keyCode) {
       case keyCodes.W: {
-        scene.offsetCameraPos(0, 0, -1);
+        scene.offsetCameraPos(0, 0, -dPos);
         break;
       };
       case keyCodes.S: {
-        scene.offsetCameraPos(0, 0, 1);
+        scene.offsetCameraPos(0, 0, dPos);
         break;
       };
       case keyCodes.A: {
-        scene.offsetCameraPos(-1, 0, 0);
+        scene.offsetCameraPos(-dPos, 0, 0);
         break;
       };
       case keyCodes.D: {
-        scene.offsetCameraPos(1, 0, 0);
+        scene.offsetCameraPos(dPos, 0, 0);
         break;
       };
       case keyCodes.Q: {
-        scene.offsetCameraPos(0, 1, 0);
+        scene.offsetCameraPos(0, dPos, 0);
         break;
       };
       case keyCodes.E: {
-        scene.offsetCameraPos(0, -1, 0);
+        scene.offsetCameraPos(0, -dPos, 0);
         break;
       };
 
@@ -140,8 +141,7 @@ const buildRoofLayer = () => {
 /*
   Main brick layers of the building.
 */
-const buildMainLayers = () => {
-  return [
+const buildMainLayers = () => [
     cube([0, 0.375, 0], [8, 0.35, 8], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 8, 0.4),
     cube([0, 1.1, 0], [8, 1.1, 8], [1, 0.7, 0.7]).texture('res/yellowsandstone.jpg', 5, 1.2),
     cube([0, 1.725, 0], [8, 0.15, 8], [0.6, 0.5, 0.5]).texture('res/yellowsandstone.jpg', 4, 0.2),
@@ -150,20 +150,33 @@ const buildMainLayers = () => {
     cube([0, 2.4, 0], [8, 0.15, 8], [0.75, 0.75, 0.4]),
     ...buildGlassLayer(),
     ...buildRoofLayer()
-  ];
-};
+];
+
 
 const buildFrontEntrace = () => {
   const buildFrontDoor = () => {
     return [
-      cube([0, 0.4, 5.35], [0.3, 2.25, 0.15], [1, 0, 0]),
+      cube([-0.275, 0.8, 5.325], [0.545, 1.375, 0.1], [0.4, 0.4, 0.4]).id("leftDoor").texture("res/window.jpg").children([
+        cube([0.175, 0, 0.1], [0.03, 0.25, 0.1], [1, 1, 1]),
+        cube([0.14, 0, 0.135], [0.1, 0.25, 0.03], [1, 1, 1])
+      ]),
+      cube([0.275, 0.8, 5.325], [0.545, 1.375, 0.1], [0.4, 0.4, 0.4]).id("rightDoor").texture("res/window.jpg").children([
+        cube([-0.175, 0, 0.1], [0.03, 0.25, 0.1], [1, 1, 1]),
+        cube([-0.14, 0, 0.135], [0.1, 0.25, 0.03], [1, 1, 1])
+      ]),
     ]
   }
 
-  const buildSidePanels = () => [];
+  const buildSidePanels = () => [
+    cube([-0.715, 0.8, 5.325], [0.32, 1.375, 0.1], [0.3, 0.3, 0.3]),
+    cube([0.715, 0.8, 5.325], [0.32, 1.375, 0.1], [0.3, 0.3, 0.3]),
+
+    cube([0.827, 0.8, 4.655], [0.1, 1.375, 1.3], [0.3, 0.3, 0.3]).texture("res/window.jpg"),
+    cube([-0.827, 0.8, 4.655], [0.1, 1.375, 1.3], [0.3, 0.3, 0.3]).texture("res/window.jpg"),
+ ];
 
   return [
-    cube([0, 1.6, 4.25], [1.75, 0.225, 2.25], [0.3, 0.3, 0.3]),
+    cube([0, 1.6, 4.25], [1.75, 0.225, 2.25], [0.15, 0.15, 0.15]),
     ...buildFrontDoor(),
     ...buildSidePanels()
   ]

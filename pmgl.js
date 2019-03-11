@@ -689,7 +689,7 @@ const _createProxyObject = (rawObject) => {
       }
 
       if (proxyObject.nodes) {
-        proxyObject.nodes.forEach(node => rawObject.add(node.toSceneObject()));
+        proxyObject.nodes.forEach(node => rawObject.add(node.toSceneObject(idObjects)));
       }
 
       return rawObject;
