@@ -139,6 +139,10 @@ class Shape {
     this._children.push(node);
   }
 
+  setTexelCoords(coords) {
+    this._customTexelCoords = coords;
+  }
+
   getHierachalMatrix() {
     let matrix = new Matrix4();
 
@@ -201,6 +205,11 @@ class Cube extends Shape {
   }
 
   _textureCoords() {
+    if (this._customTexelCoords) {
+      console.log("Using custom...");
+      return this._customTexelCoords;
+    }
+
     const x = this._txMultX;
     const y = this._txMultY;
     // In order to get repeating texture you need to extrapolate the texture coordinate system
@@ -269,6 +278,11 @@ class Prism extends Shape {
   }
 
   _textureCoords() {
+    if (this._customTexelCoords) {
+      console.log("using custom from prism");
+      return this._customTexelCoords;
+    }
+    
     const x = this._txMultX;
     const y = this._txMultY;
 
@@ -577,7 +591,6 @@ class Scene {
     // Set the texture image
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, glTexture.image);
     gl.generateMipmap(gl.TEXTURE_2D);
-    // gl.bindTexture(gl.TEXTURE_2D, null);
 
     _initUniformBit(this._gl, 'u_Sampler', 0);
 
@@ -672,6 +685,12 @@ const _createProxyObject = (rawObject) => {
 
     rotate: (x, y, z) => {
       rawObject.rotate(x, y, z);
+
+      return proxyObject;
+    },
+
+    texelCoords: coords => {
+      rawObject.setTexelCoords(coords);
 
       return proxyObject;
     },

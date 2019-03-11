@@ -152,8 +152,11 @@ const buildMainLayers = () => [
     ...buildRoofLayer()
 ];
 
-
-const buildFrontEntrace = () => {
+/*
+  Main entrace with the automatic doors
+  Doors are animated to open and close
+*/
+const buildFrontEntrance = () => {
   const buildFrontDoor = () => {
     return [
       cube([-0.275, 0.8, 5.325], [0.545, 1.375, 0.1], [0.4, 0.4, 0.4]).id("leftDoor").texture("res/window.jpg").children([
@@ -182,11 +185,38 @@ const buildFrontEntrace = () => {
   ]
 };
 
+const buildSideEntrance = () => {
+  const buildRamp = () => {
+    // v1-v2-v3
+  // v1-v3-v4-v5
+  // v1-v2-v6-v5
+  // v2-v3-v4-v6
+  // v5-v6-v4
+    const customPrismTexelCoords = new Float32Array([ // We want a separate texture for the top face
+      0, 0,  5, 0,  5, 0.5,
+      4, 0.5,  4, 1,  0, 1,  0, 0.5,
+      1, 0,  1, 0.5,  0, 0.5,  0, 0,
+      1, 0,  1, 0.5,  0, 0.5,  0, 0,
+      0, 0,  5, 0,  5, 0.5
+    ]);
+
+    return [
+      cube([1.8, 0.275, 4.5], [1.1, 0.2, 1], [0.75, 0.7, 0.7]).texture("res/redbrick.jpg", 4, 0.5),
+      prism([3.15, 0.275, 4.5], [-1.6, 0.2, 1], [0.7, 0.7, 0.7]).texture('res/ramp3.jpg').texelCoords(customPrismTexelCoords),
+    ]
+  };
+
+  return [
+    ...buildRamp()
+  ]
+};
+
 const rowanHouse = () => {
   return [
     cube([0, 0, 0], [15, 0.35, 15], [0.5, 0.5, 0.5]).id("root").children([
       ...buildMainLayers(),
-      ...buildFrontEntrace()
+      ...buildFrontEntrance(),
+      ...buildSideEntrance()
     ])
   ];
 }
@@ -194,7 +224,7 @@ const rowanHouse = () => {
 const createScene = () => {
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
-  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg']);
+  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/ramp3.jpg']);
   
   makeModelMoveable(scene, idObjects);
 
