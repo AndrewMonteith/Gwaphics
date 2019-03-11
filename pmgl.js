@@ -119,23 +119,15 @@ class Shape {
     ]
   }
 
-  texture(textureUri) {
+  texture(textureUri, multiplierX, multiplierY) {
     this._texture = textureUri;
+    this._txMultX = multiplierX || 1;
+    this._txMultY = multiplierY || 1;
   }
 
   add(node) {
     this._children.push(node);
   }
-
-  // getHierachalMatrix() {
-  //   let matrix = new Matrix4();
-
-  //   return matrix
-  //     .setTranslate(this._position[0], this._position[1], this._position[2])
-  //     .rotate(this._rotation[1], 0, 1, 0)
-  //     .rotate(this._rotation[2], 0, 0, 1)  
-  //     .rotate(this._rotation[0], 1, 0, 0);
-  // }
 
   getHierachalMatrix() {
     let matrix = new Matrix4();
@@ -199,13 +191,17 @@ class Cube extends Shape {
   }
 
   _textureCoords() {
+    const x = this._txMultX;
+    const y = this._txMultY;
+    // In order to get repeating texture you need to extrapolate the texture coordinate system
+    // beyond (1, 1) hence this multiplier.
     return new Float32Array([
-      1.0, 1.0,    0.0, 1.0,   0.0, 0.0,   1.0, 0.0,  // v0-v1-v2-v3 front
-      0.0, 1.0,    0.0, 0.0,   1.0, 0.0,   1.0, 1.0,  // v0-v3-v4-v5 right
-      1.0, 0.0,    1.0, 1.0,   0.0, 1.0,   0.0, 0.0,  // v0-v5-v6-v1 up
-      1.0, 1.0,    0.0, 1.0,   0.0, 0.0,   1.0, 0.0,  // v1-v6-v7-v2 left
-      0.0, 0.0,    1.0, 0.0,   1.0, 1.0,   0.0, 1.0,  // v7-v4-v3-v2 down
-      0.0, 0.0,    1.0, 0.0,   1.0, 1.0,   0.0, 1.0   // v4-v7-v6-v5 back
+      x, y,    0.0, y,   0.0, 0.0,   x, 0.0,  // v0-v1-v2-v3 front
+      0.0, y,    0.0, 0.0,   x, 0.0,   x, y,  // v0-v3-v4-v5 right
+      x, 0.0,    x, y,   0.0, y,   0.0, 0.0,  // v0-v5-v6-v1 up
+      x, y,    0.0, y,   0.0, 0.0,   x, 0.0,  // v1-v6-v7-v2 left
+      0.0, 0.0,    x, 0.0,   x, y,   0.0, y,  // v7-v4-v3-v2 down
+      0.0, 0.0,    x, 0.0,   x, y,   0.0, y   // v4-v7-v6-v5 back
     ]);
   }
 
@@ -263,12 +259,15 @@ class Prism extends Shape {
   }
 
   _textureCoords() {
+    const x = this._txMultX;
+    const y = this._txMultY;
+
     return new Float32Array([
-    0, 0,  1, 0,  1, 1,
-    1, 0,  1, 1,  0, 1,  0, 0,
-    1, 0,  1, 1,  0, 1,  0, 0,
-    1, 0,  1, 1,  0, 1,  0, 0,
-    0, 0,  1, 0,  1, 1
+      0, 0,  x, 0,  x, y,
+      x, 0,  x, y,  0, y,  0, 0,
+      x, 0,  x, y,  0, y,  0, 0,
+      x, 0,  x, y,  0, y,  0, 0,
+      0, 0,  x, 0,  x, y
     ]);
   }
 
@@ -430,8 +429,9 @@ class _TextureManager {
     
     textureLoadPromises.forEach(loadedTexture => {
       let glTexture = gl.createTexture();
+
       glTexture.image = loadedTexture.img;
-      
+
       this._textures[loadedTexture.uri] = glTexture;
     });
   }
@@ -465,15 +465,15 @@ const _calculateNormalMatrix = (modelMatrix) => {
 
 class Scene {
   constructor(canvas) {
-    this._backgroundColor = [0.8, 0.8, 0.8];
+    this._backgroundColor = [0, 0, 0];
 
-    this._cameraPos = [0, 6, 32];
+    this._cameraPos = [0, 6, 20];
     this._lookAt = [0, 0, -10];
 
     // For now we're only going to support a single point light.
-    this._lightPosition = [0, 6, 20];  // Temp?s
+    this._lightPosition = [0, 6, 18];  // Temp?s
     this._lightColour = [0.6, 0.6, 0.6];
-    this._ambientLight = [0.25, 0.25, 0.25];
+    this._ambientLight = [0.1, 0.1, 0.1];
 
     this._gl = _createWebGLContext(canvas);
     this._projectionMatrix = _createProjectionMatrix(canvas.width / canvas.height);
@@ -558,12 +558,19 @@ class Scene {
 
     // Bind the texture object to the target
     gl.bindTexture(gl.TEXTURE_2D, glTexture);
-
+    
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    
     // Set the texture image
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, glTexture.image);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    // gl.bindTexture(gl.TEXTURE_2D, null);
 
     _initUniformBit(this._gl, 'u_Sampler', 0);
+
   }
 
   _initaliseTextures(texture) { // texture = {texture, coords}
@@ -659,8 +666,9 @@ const _createProxyObject = (rawObject) => {
       return proxyObject;
     },
 
-    texture: (tex) => {
-      rawObject.texture(tex);
+    texture: (tex, multiplierX, multiplierY) => {
+      multiplierY = multiplierY || multiplierX;
+      rawObject.texture(tex, multiplierX, multiplierY);
 
       return proxyObject;
     },

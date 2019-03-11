@@ -39,12 +39,13 @@ const buildGlassLayer = () => {
   const cornerWidths = 0.25;
   const buildCornerLayers = () => {
     const d = 4 - cornerWidths/2;
+    const createCorner = pos => cube(pos, [0.25, 1, 0.25], [0.6, 0.6, 0.6]).texture('res/window.jpg', 1, 1);
 
     return [
-      cube([d, 2.975, d], [0.25, 1, 0.25], [0, 0, 1]),
-      cube([-d, 2.975, d], [0.25, 1, 0.25], [0, 0, 1]),
-      cube([d, 2.975, -d], [0.25, 1, 0.25], [0, 0, 1]),
-      cube([-d, 2.975, -d], [0.25, 1, 0.25], [0, 0, 1])
+      createCorner([d, 2.975, d]),
+      createCorner([-d, 2.975, d]),
+      createCorner([d, 2.975, -d]),
+      createCorner([-d, 2.975, -d])
     ]; 
   };
   
@@ -57,7 +58,7 @@ const buildGlassLayer = () => {
       const horizontalOffset = x0 + 0.5*i;
 
       for (let rotation = 0; rotation < 360; rotation += 90) {
-        panels.push(cube([horizontalOffset, 2.975, z0], [0.5, 1, 0.25], [0, 1, 0]).rotate(0, rotation, 0));
+        panels.push(cube([horizontalOffset, 2.975, z0], [0.5, 1, 0.25], [0.6, 0.6, 0.6]).rotate(0, rotation, 0).texture('res/window.jpg'));
       }
     }
     
@@ -95,12 +96,12 @@ const buildRoofLayer = () => {
 */
 const buildMainLayers = () => {
   return [
-    cube([0, 0.375, 0], [8, 0.35, 8], [0.7, 0.7, 0.7]).texture("res/redbrick.jpg"),
-    cube([0, 1.1, 0], [8, 1.1, 8], [1, 0.7, 0.7]),
-    cube([0, 1.725, 0], [8, 0.15, 8], [1, 0, 0]),
-    cube([0, 1.875, 0], [8, 0.15, 8], [0, 1, 0]),
-    cube([0, 2.145, 0], [8, 0.40, 8], [0.5, 0.5, 0.5]),
-    cube([0, 2.4, 0], [8, 0.15, 8], [0.6, 0.6, 0.6]),
+    cube([0, 0.375, 0], [8, 0.35, 8], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 8, 0.4),
+    cube([0, 1.1, 0], [8, 1.1, 8], [1, 0.7, 0.7]).texture('res/yellowsandstone.jpg', 5, 1.2),
+    cube([0, 1.725, 0], [8, 0.15, 8], [0.6, 0.5, 0.5]).texture('res/yellowsandstone.jpg', 4, 0.2),
+    cube([0, 1.875, 0], [8, 0.15, 8], [1, 0.7, 0.7]).texture('res/yellowsandstone.jpg', 3.8, 0.2),
+    cube([0, 2.145, 0], [8, 0.40, 8], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 8, 0.4),
+    cube([0, 2.4, 0], [8, 0.15, 8], [0.75, 0.75, 0.4]),
     ...buildGlassLayer(),
     ...buildRoofLayer()
   ];
@@ -114,16 +115,9 @@ const rowanHouse = () => {
 
 
 const createScene = () => {
-  // const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'),
-  // [
-  //   cube([0, 0, 0], [4, 4, 4], [1, 1, 1], 'res/sky.jpg').id("root").children([
-  //     prism([0, 4, 0], [4, 4, 4], [1, 1, 1], 'res/slate.jpg')
-  //   ])
-  // ])
-
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
-  scene.loadTextures(['res/redbrick.jpg']);
+  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg']);
   bindEvents(scene, idObjects["root"]);
 
   return scene;
