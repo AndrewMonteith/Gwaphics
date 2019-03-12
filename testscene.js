@@ -376,13 +376,13 @@ const listenForAnimations = (scene, idObjects) => {
 };
 
 const createScene = () => {
-  const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
+  const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), [eqPrism([0, 0, 0], [3, 3, 3], [1, 0, 0]).id("root")]);
 
   scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg',
                       'res/driveway.jpg']);
   
   makeModelMoveable(scene, idObjects);
-  listenForAnimations(scene, idObjects);
+  // listenForAnimations(scene, idObjects);
 
   return scene;
 };

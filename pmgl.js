@@ -242,7 +242,7 @@ class Cube extends Shape {
   }
 }
 
-class Prism extends Shape {
+class RightAngledPrism extends Shape {
   constructor(position, size, colour, texture) {
     super(position, size, colour, texture);
   }
@@ -280,6 +280,84 @@ class Prism extends Shape {
 
   _indicies() {
     return _lazyLoad('prism-indicies', () => new Uint8Array([
+      0, 1, 2, 
+      3, 4, 5,   3, 5, 6,
+      7, 8, 9,   7, 9, 10,
+      11, 12, 13, 11, 13, 14,
+      15, 16, 17  
+    ]));
+  }
+
+  _textureCoords() {
+    if (this._customTexelCoords) {
+      return this._customTexelCoords;
+    }
+    
+    const x = this._txMultX;
+    const y = this._txMultY;
+
+    return _lazyLoad('prism-tx-coords', () => new Float32Array([
+      0, 0,  x, 0,  x, y,
+      x, 0,  x, y,  0, y,  0, 0,
+      x, 0,  x, y,  0, y,  0, 0,
+      x, 0,  x, y,  0, y,  0, 0,
+      0, 0,  x, 0,  x, y
+    ]));
+  }
+
+  draw(scene, hierachicalMatrix) {
+    const newHierachicalMatrix = _drawElements(scene, this, hierachicalMatrix);
+    
+    super.draw(scene, newHierachicalMatrix);
+  }
+}
+
+class EquilaterialPrism extends Shape {
+  constructor(position, size, colour, texture) {
+    super(position, size, colour, texture);
+  }
+  _name() {
+    return "Prism";
+  }
+
+  // v1-v2-v3
+  // v2-v4-v6-v3
+  // v1-v2-v4-v5
+  // v1-v5-v6-v3
+  // v5-v4-v6
+
+  _verticies() {
+    return _lazyLoad('prism-eq-verticies', () => {
+      const x = 0.5, z = 0.5, y = 0.866 / 2; 
+      return new Float32Array([
+        -x, -y, z,  x, -y, z,  0, y, z, // v1-v2-v3
+        x, -y, z,  x, -y, -z,  0, y, -z,  0, y, z, //v2-v4-v6-v3,
+        -x, -y, z,  x, -y, z,  x, -y, -z,  -x, -y, -z, // v1-v2-v4-v5
+        -x, -y, z,  -x, -y, -z,  0, y, -z,  0, y, z, // v1-v5-v6-v3
+        -x, -y, -z,  x, -y, -z,  0, y, -z // v5-v4-v6
+      ]);
+    });
+  }
+
+  _normals() {
+    return _lazyLoad('prism-eq-normals', () => { 
+      const rad30 = 30 * (Math.PI / 180);
+      
+      const nx = Math.cos(rad30) * Math.cos(rad30);
+      const ny = Math.cos(rad30) * Math.sin(rad30);
+
+      return new Float32Array([
+        0, 0, 1,  0, 0, 1,  0, 0, 1,
+        nx, ny, 0,  nx, ny, 0,  nx, ny, 0,  nx, ny, 0,
+        0, -1, 0,  0, -1, 0,  0, -1, 0,  0, -1, 0,
+        -nx, ny, 0,  -nx, ny, 0,  -nx, ny, 0,  -nx, ny, 0,
+        0, 0, -1,  0, 0, -1,  0, 0, -1
+      ]);
+    });
+  }
+
+  _indicies() {
+    return _lazyLoad('prism-eq-indicies', () => new Uint8Array([
       0, 1, 2, 
       3, 4, 5,   3, 5, 6,
       7, 8, 9,   7, 9, 10,
@@ -742,8 +820,8 @@ const _createProxyObject = (rawObject) => {
 }
 
 const cube = (position, size, colour, texture) => _createProxyObject(new Cube(position, size, colour, texture));
-const prism = (position, size, colour, texture) => _createProxyObject(new Prism(position, size, colour, texture));
-
+const prism = (position, size, colour, texture) => _createProxyObject(new RightAngledPrism(position, size, colour, texture));
+const eqPrism = (position, size, colour, texture) => _createProxyObject(new EquilaterialPrism(position, size, colour, texture));
 
 const buildScene = (cavnas, nodes) => {
   const scene = new Scene(cavnas), idObjects = {};
