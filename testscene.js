@@ -270,15 +270,32 @@ const sideColumns = () => {
   ]
 };
 
+const buildRoadEnvironment = () => {
+  const drivewayLine = (position) => 
+    cube(position, [0.05, 0.025, 3], [1, 1, 1]).children([
+      cube([0, 0, 1.4375], [0.25, 0.025, 0.125], [1, 1, 1])
+    ]);
+
+  return [
+    cube([2.7, 0.126, 7.5], [3.4, 0.1, 3], [1, 1, 1]).texture('res/driveway.jpg', 6, 4).children([
+      drivewayLine([0.34, 0.04, 0]),
+      drivewayLine([1.02, 0.04, 0]),
+      drivewayLine([-0.34, 0.04, 0]),
+      drivewayLine([-1.02, 0.04, 0]),
+    ])
+  ]
+};
+
 const rowanHouse = () => {
   return [
     cube([0, 0, 0], [15, 0.35, 15], [0.5, 0.5, 0.5]).id("root").children([
       ...buildMainLayers(),
       ...buildFrontEntrance(),
       ...buildSideEntrance(),
-
       ...sideColumns(),
-      ...placeWindows()
+      ...placeWindows(),
+
+      ...buildRoadEnvironment()
     ])
   ];
 }
@@ -286,7 +303,8 @@ const rowanHouse = () => {
 const createScene = () => {
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
-  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg']);
+  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg',
+                      'res/driveway.jpg']);
   
   makeModelMoveable(scene, idObjects);
 
