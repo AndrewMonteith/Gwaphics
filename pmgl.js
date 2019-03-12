@@ -823,6 +823,21 @@ const cube = (position, size, colour, texture) => _createProxyObject(new Cube(po
 const prism = (position, size, colour, texture) => _createProxyObject(new RightAngledPrism(position, size, colour, texture));
 const eqPrism = (position, size, colour, texture) => _createProxyObject(new EquilaterialPrism(position, size, colour, texture));
 
+const hexagon = (position, size, colour) => {
+  const heightOffset = -size[1] * Math.cos(30* Math.PI/180)/4;
+
+  const eqTriangleSize = [size[0]/2, size[1]/2, size[2]/2];
+
+  return cube(position, [0, 0, 0], [0, 0, 0]).children([
+    eqPrism([0, heightOffset, 0], eqTriangleSize, colour),  
+    eqPrism([0, heightOffset, 0], eqTriangleSize, colour).rotate(0, 0, 60),
+    eqPrism([0, heightOffset, 0], eqTriangleSize, colour).rotate(0, 0, 120),
+    eqPrism([0, heightOffset, 0], eqTriangleSize, colour).rotate(0, 0, 180),
+    eqPrism([0, heightOffset, 0], eqTriangleSize, colour).rotate(0, 0, 240),
+    eqPrism([0, heightOffset, 0], eqTriangleSize, colour).rotate(0, 0, 300),
+  ])
+}
+
 const buildScene = (cavnas, nodes) => {
   const scene = new Scene(cavnas), idObjects = {};
   nodes.forEach(node => {

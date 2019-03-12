@@ -314,20 +314,28 @@ const buildTexturedGround = () => {
   ]
 };
 
-const rowanHouse = () => {
+const buildFireAlarm = () => {
   return [
-    cube([0, 0, 0], [15, 0.225, 15], [0.5, 0.5, 0.5]).id("root").children([
-      ...buildMainLayers(),
-      ...buildFrontEntrance(),
-      ...buildSideEntrance(),
-      ...buildSideColumns(),
-      ...placeWindows(),
-      
-      ...buildTexturedGround(),
-      ...buildRoadEnvironment()
+    cube([3.6, 2.15, 4], [0,0,0], [0, 0, 0]).children([
+      hexagon([0, 0, 0], [.3, .3, .2], [1, .7, 0]),
+      cube([0, 0, 0.035], [.2, .125, .05], [1, 1, 1]).texture('res/adt.jpg')
     ])
-  ];
-}
+  ]
+};
+
+const rowanHouse = () => [
+  cube([0, 0, 0], [15, 0.225, 15], [0.5, 0.5, 0.5]).id("root").children([
+    ...buildMainLayers(),
+    ...buildFrontEntrance(),
+    ...buildSideEntrance(),
+    ...buildSideColumns(),
+    ...placeWindows(),
+    
+    ...buildTexturedGround(),
+    ...buildRoadEnvironment(),
+    ...buildFireAlarm()
+  ])
+];
 
 let animationIsActive = false;
 
@@ -375,11 +383,12 @@ const listenForAnimations = (scene, idObjects) => {
   document.addEventListener('keydown', onKeyDown);
 };
 
+
 const createScene = () => {
-  const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), [eqPrism([0, 0, 0], [3, 3, 3], [1, 0, 0]).id("root")]);
+  const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
   scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg',
-                      'res/driveway.jpg']);
+                      'res/driveway.jpg', 'res/adt.jpg']);
   
   makeModelMoveable(scene, idObjects);
   // listenForAnimations(scene, idObjects);
