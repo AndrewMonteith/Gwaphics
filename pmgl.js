@@ -83,6 +83,18 @@ const addVector = (vec, x, y, z) => [
   vec[2] + z
 ]
 
+const _lazyLoadedValues = {};
+const _lazyLoad = (id, value) => {
+  let val = _lazyLoadedValues[id];
+  if (val) {
+    return val;
+  }
+
+  val = value();
+  _lazyLoadedValues[id] = val;
+  return val;
+};
+
 const _copyMatrix = (matrix) => (new Matrix4()).set(matrix);
 
 const _drawElements = (scene, shape, hierachicalMatrix) => {
@@ -170,36 +182,36 @@ class Cube extends Shape {
   }
 
   _verticies() {
-    return new Float32Array([
+    return _lazyLoad('cube-verticies', () => new Float32Array([
       0.5, 0.5, 0.5,  -0.5, 0.5, 0.5,  -0.5,-0.5, 0.5,   0.5,-0.5, 0.5, // v0-v1-v2-v3 front
       0.5, 0.5, 0.5,   0.5,-0.5, 0.5,   0.5,-0.5,-0.5,   0.5, 0.5,-0.5, // v0-v3-v4-v5 right
       0.5, 0.5, 0.5,   0.5, 0.5,-0.5,  -0.5, 0.5,-0.5,  -0.5, 0.5, 0.5, // v0-v5-v6-v1 up
      -0.5, 0.5, 0.5,  -0.5, 0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5,-0.5, 0.5, // v1-v6-v7-v2 left
      -0.5,-0.5,-0.5,   0.5,-0.5,-0.5,   0.5,-0.5, 0.5,  -0.5,-0.5, 0.5, // v7-v4-v3-v2 down
       0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5, 0.5,-0.5,   0.5, 0.5,-0.5  // v4-v7-v6-v5 back
-    ])
+    ]));
   };
 
   _normals() {
-    return new Float32Array([
+    return _lazyLoad('cube-normals', () => new Float32Array([
       0.0, 0.0, 0.5,   0.0, 0.0, 0.5,   0.0, 0.0, 0.5,   0.0, 0.0, 0.5,  // v0-v1-v2-v3 front
       0.5, 0.0, 0.0,   0.5, 0.0, 0.0,   0.5, 0.0, 0.0,   0.5, 0.0, 0.0,  // v0-v3-v4-v5 right
       0.0, 0.5, 0.0,   0.0, 0.5, 0.0,   0.0, 0.5, 0.0,   0.0, 0.5, 0.0,  // v0-v5-v6-v1 up
      -0.5, 0.0, 0.0,  -0.5, 0.0, 0.0,  -0.5, 0.0, 0.0,  -0.5, 0.0, 0.0,  // v1-v6-v7-v2 left
       0.0,-0.5, 0.0,   0.0,-0.5, 0.0,   0.0,-0.5, 0.0,   0.0,-0.5, 0.0,  // v7-v4-v3-v2 down
       0.0, 0.0,-0.5,   0.0, 0.0,-0.5,   0.0, 0.0,-0.5,   0.0, 0.0,-0.5   // v4-v7-v6-v5 back
-    ]);
+    ]));
   }
 
   _indicies() {
-    return new Uint8Array([
+    return _lazyLoad('cube-indicies', () => new Uint8Array([
       0, 1, 2,   0, 2, 3,     // front
       4, 5, 6,   4, 6, 7,     // right
       8, 9,10,   8,10,11,     // up
       12,13,14,  12,14,15,    // left
       16,17,18,  16,18,19,    // down
       20,21,22,  20,22,23     // back
-    ]);
+    ]));
   }
 
   _textureCoords() {
@@ -211,14 +223,16 @@ class Cube extends Shape {
     const y = this._txMultY;
     // In order to get repeating texture you need to extrapolate the texture coordinate system
     // beyond (1, 1) hence this multiplier.
-    return new Float32Array([
+
+    const id = `cube-tx-${x}-${y}`;
+    return _lazyLoad(id, () => new Float32Array([
       x, y,    0.0, y,   0.0, 0.0,   x, 0.0,  // v0-v1-v2-v3 front
       0.0, y,    0.0, 0.0,   x, 0.0,   x, y,  // v0-v3-v4-v5 right
       x, 0.0,    x, y,   0.0, y,   0.0, 0.0,  // v0-v5-v6-v1 up
       x, y,    0.0, y,   0.0, 0.0,   x, 0.0,  // v1-v6-v7-v2 left
       0.0, 0.0,    x, 0.0,   x, y,   0.0, y,  // v7-v4-v3-v2 down
       0.0, 0.0,    x, 0.0,   x, y,   0.0, y   // v4-v7-v6-v5 back
-    ]);
+    ]));
   }
 
   draw(scene, hierachicalMatrix) {
@@ -245,33 +259,33 @@ class Prism extends Shape {
   }
 
   _verticies() {
-    return new Float32Array([
+    return _lazyLoad('prism-verticies', () => new Float32Array([
       -0.5, -0.5, 0.5,  0.5, -0.5, 0.5,  0.5, 0.5, 0.5, // v1-v2-v3
       -0.5, -0.5, 0.5,  0.5, 0.5, 0.5,  0.5, 0.5, -0.5,  -0.5, -0.5, -0.5, // v1-v3-v4-v5
       -0.5, -0.5, 0.5,  0.5, -0.5, 0.5, 0.5, -0.5, -0.5,  -0.5, -0.5, -0.5, // v1-v2-v6-v5
       0.5, -0.5, 0.5,  0.5, 0.5, 0.5,  0.5, 0.5, -0.5,  0.5, -0.5, -0.5, // v2-v3-v4-v6
       -0.5, -0.5, -0.5,  0.5, -0.5, -0.5,  0.5, 0.5, -0.5 // v5-v6-v4
-    ]);
+    ]));
   }
 
   _normals() {
-    return new Float32Array([
+    return _lazyLoad('prism-normals', () => new Float32Array([
         0, 0, 1,  0, 0, 1,  0, 0, 1,
         -1, 1, 0,  -1, 1, 0,  -1, 1, 0,  -1, 1, 0,
         0, -1, 0,  0, -1, 0,  0, -1, 0,  0, -1, 0,
         1, 0, 0,  1, 0, 0,  1, 0, 0,  1, 0, 0,
         0, 0, -1,  0, 0, -1,  0, 0, -1
-    ]);
+    ]));
   }
 
   _indicies() {
-    return new Uint8Array([
+    return _lazyLoad('prism-indicies', () => new Uint8Array([
       0, 1, 2, 
       3, 4, 5,   3, 5, 6,
       7, 8, 9,   7, 9, 10,
       11, 12, 13, 11, 13, 14,
       15, 16, 17  
-    ]);
+    ]));
   }
 
   _textureCoords() {
@@ -282,13 +296,13 @@ class Prism extends Shape {
     const x = this._txMultX;
     const y = this._txMultY;
 
-    return new Float32Array([
+    return _lazyLoad('prism-tx-coords', () => new Float32Array([
       0, 0,  x, 0,  x, y,
       x, 0,  x, y,  0, y,  0, 0,
       x, 0,  x, y,  0, y,  0, 0,
       x, 0,  x, y,  0, y,  0, 0,
       0, 0,  x, 0,  x, y
-    ]);
+    ]));
   }
 
   draw(scene, hierachicalMatrix) {
