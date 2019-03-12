@@ -198,7 +198,7 @@ const buildSideEntrance = () => {
 
     return [
       cube([2, 0.275, 4.5], [1.1, 0.2, 1], [0.75, 0.7, 0.7]).texture("res/redbrick.jpg", 4, 0.5),
-      prism([3.2, 0.275, 4.5], [-1.3, 0.2, 1], [0.7, 0.7, 0.7]).texture('res/ramp.jpg').texelCoords(customPrismTexelCoords),
+      prism([3.3, 0.275, 4.5], [-1.5, 0.2, 1], [0.7, 0.7, 0.7]).texture('res/ramp.jpg').texelCoords(customPrismTexelCoords),
     ]
   };
 
@@ -236,7 +236,7 @@ const placeWindows = () => {
   ]
 };
 
-const sideColumns = () => {
+const buildSideColumns = () => {
   const placeSideColumn = (position, doUpwardSpike) => {
     const children = [
       prism([0, 0.05, 0], [0.05, 0.05, 1.55], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 2, .15).rotate(90, 90, 0),
@@ -277,24 +277,44 @@ const buildRoadEnvironment = () => {
     ]);
 
   return [
-    cube([2.7, 0.126, 7.5], [3.4, 0.1, 3], [1, 1, 1]).texture('res/driveway.jpg', 6, 4).children([
-      drivewayLine([0.34, 0.04, 0]),
-      drivewayLine([1.02, 0.04, 0]),
-      drivewayLine([-0.34, 0.04, 0]),
-      drivewayLine([-1.02, 0.04, 0]),
-    ])
+    cube([2.7, 0.106, 6.8], [3.4, 0.1, 3], [1, 1, 1]).texture('res/driveway.jpg', 6, 4).children([
+      drivewayLine([0.56, 0.04, 0]),
+      drivewayLine([-0.56, 0.04, 0]),
+    ]),
+
+    // Original: 8
+
+    cube([1.75, 0.106, 5.75], [11.5, 0.1, 3.5], [1, 1, 1]).texture('res/driveway.jpg', 6, 4).children([
+      drivewayLine([-1.18, 0.04, -0.25]),
+      drivewayLine([-0.04, 0.04, -0.25]),
+      drivewayLine([1.1, 0.04, -0.25]),
+      drivewayLine([2.24, 0.04, -0.25]),
+      drivewayLine([-2.32, 0.04, -0.25]),
+      drivewayLine([-3.46, 0.04, -0.25]),
+      drivewayLine([-4.6, 0.04, -0.25]),
+    ]).rotate(0, 90, 0)
+  ]
+};
+
+const buildTexturedGround = () => {
+  return [
+    cube([2.4, 0.126, 0.65], [3.2, 0.1675, 9.3], [.8, .8, .8]).texture('res/driveway.jpg', 5, 5),
+    cube([5.8, 0.126, 4.65], [3.6, 0.1675, 1.3], [.8, .8, .8]).texture('res/driveway.jpg', 4, .6),
+    cube([-4.2, 0.126, 5.15], [6.61, 0.1675, 4.75], [.8, .8, .8]).texture('res/driveway.jpg', 6.2, 2.2),
+    cube([-1.7505, 0.126, -2.35], [11.51, 0.1675, 10.3], [.8, .8, .8]).texture('res/driveway.jpg', 8, 7),
   ]
 };
 
 const rowanHouse = () => {
   return [
-    cube([0, 0, 0], [15, 0.35, 15], [0.5, 0.5, 0.5]).id("root").children([
+    cube([0, 0, 0], [15, 0.225, 15], [0.5, 0.5, 0.5]).id("root").children([
       ...buildMainLayers(),
       ...buildFrontEntrance(),
       ...buildSideEntrance(),
-      ...sideColumns(),
+      ...buildSideColumns(),
       ...placeWindows(),
-
+      
+      ...buildTexturedGround(),
       ...buildRoadEnvironment()
     ])
   ];
