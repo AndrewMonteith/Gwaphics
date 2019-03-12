@@ -209,17 +209,20 @@ const buildSideEntrance = () => {
   };
 
   const buildRampDoor = () => [
-    cube([2, 0.975, 3.98], [0.6, 1.2, 0.05], [0.3, 0.3, 0.3]).texture('res/blackplastic.jpg').children([
-      cube([0.3, 0, 0], [0.08, 1.2, 0.075], [0, 0, 0]),
-      cube([-0.3, 0, 0], [0.08, 1.2, 0.075], [0, 0, 0]),
-      cube([0, 0.56, 0], [0.63, 0.08, 0.075], [0, 0, 0]),
+    cube([1.725, 0.975, 3.98], [0, 0, 0], [0, 0, 0]).children([
+      cube([0, 0, 0], [0.08, 1.2, 0.075], [0, 0, 0]),
+      cube([0.6, 0, 0], [0.08, 1.2, 0.075], [0, 0, 0]),
+      cube([0.3, 0.56, 0], [0.63, 0.08, 0.075], [0, 0, 0]),
 
-      cube([0.175, 0, 0.0405], [0.065, 0.20, 0.015], [0.7, 0.7, 0.7]).children([
-        cube([0, 0, 0], [0.03, 0.03, 0.15], [0.525, 0.525, 0.525]).children([
-          cube([-0.0225, 0, 0.09], [0.075, 0.03, 0.03], [0.525, 0.525, 0.525])
+      cube([0.3, -0.04, 0], [0.52, 1.12, 0.05], [0.3, 0.3, 0.3]).id("sideDoor").texture('res/blackplastic.jpg').children([
+        cube([0.175, 0, 0.0405], [0.065, 0.20, 0.015], [0.7, 0.7, 0.7]).children([
+          cube([0, 0, 0], [0.03, 0.03, 0.15], [0.525, 0.525, 0.525]).children([
+            cube([-0.0225, 0, 0.09], [0.075, 0.03, 0.03], [0.525, 0.525, 0.525])
+          ])
         ])
       ])
-    ])
+    ]),
+    
   ];
 
   return [
@@ -334,13 +337,15 @@ const toggleFrontDoorAnimation = (scene, idObjects) => {
   let currentStep = 0, stepDirection = 1, animationTimer;
   const numberOfSteps = 40, rotationStep = 90/numberOfSteps;
 
-  const leftPivot = idObjects["leftFrontDoor"], rightPivot = idObjects["rightFrontDoor"];
+  const frontleftPivot = idObjects["leftFrontDoor"], frontRightPivot = idObjects["rightFrontDoor"];
+  const sidePivot = idObjects["sideDoor"];
 
   const doAnimationStep = () => {
     currentStep += stepDirection;
 
-    leftPivot.rotate(0, -stepDirection * rotationStep, 0);
-    rightPivot.rotate(0, stepDirection * rotationStep, 0);
+    frontleftPivot.rotate(0, -stepDirection * rotationStep, 0);
+    frontRightPivot.rotate(0, stepDirection * rotationStep, 0);
+    sidePivot.rotate(0, -stepDirection* rotationStep, 0);
 
     if (currentStep === numberOfSteps) {
       stepDirection = -1;
