@@ -179,7 +179,7 @@ const buildFrontEntrance = () => {
  ];
 
   return [
-    cube([0, 1.6, 4.25], [1.75, 0.225, 2.25], [0.15, 0.15, 0.15]),
+    cube([0, 1.6, 4.25], [1.75, 0.225, 2.25], [0.25, 0.25, 0.25]).texture('res/blackplastic.jpg'),
     ...buildFrontDoor(),
     ...buildSidePanels()
   ]
@@ -187,11 +187,6 @@ const buildFrontEntrance = () => {
 
 const buildSideEntrance = () => {
   const buildRamp = () => {
-    // v1-v2-v3
-  // v1-v3-v4-v5
-  // v1-v2-v6-v5
-  // v2-v3-v4-v6
-  // v5-v6-v4
     const customPrismTexelCoords = new Float32Array([ // We want a separate texture for the top face
       0, 0,  5, 0,  5, 0.5,
       4, 0.5,  4, 1,  0, 1,  0, 0.5,
@@ -201,13 +196,76 @@ const buildSideEntrance = () => {
     ]);
 
     return [
-      cube([1.8, 0.275, 4.5], [1.1, 0.2, 1], [0.75, 0.7, 0.7]).texture("res/redbrick.jpg", 4, 0.5),
-      prism([3.15, 0.275, 4.5], [-1.6, 0.2, 1], [0.7, 0.7, 0.7]).texture('res/ramp3.jpg').texelCoords(customPrismTexelCoords),
+      cube([2.1, 0.275, 4.5], [1.1, 0.2, 1], [0.75, 0.7, 0.7]).texture("res/redbrick.jpg", 4, 0.5),
+      prism([3.3, 0.275, 4.5], [-1.3, 0.2, 1], [0.7, 0.7, 0.7]).texture('res/ramp.jpg').texelCoords(customPrismTexelCoords),
+    ]
+  };
+
+  const buildRampDoor = () => [
+    cube([2.1, 0.975, 3.98], [0.6, 1.2, 0.05], [0.3, 0.3, 0.3]).texture('res/blackplastic.jpg').children([
+      cube([0.3, 0, 0], [0.08, 1.2, 0.075], [0, 0, 0]),
+      cube([-0.3, 0, 0], [0.08, 1.2, 0.075], [0, 0, 0]),
+      cube([0, 0.56, 0], [0.63, 0.08, 0.075], [0, 0, 0]),
+
+      cube([0.175, 0, 0.0405], [0.065, 0.20, 0.015], [0.7, 0.7, 0.7]).children([
+        cube([0, 0, 0], [0.03, 0.03, 0.15], [0.525, 0.525, 0.525]).children([
+          cube([-0.0225, 0, 0.09], [0.075, 0.03, 0.03], [0.525, 0.525, 0.525])
+        ])
+      ])
+    ])
+  ];
+
+  return [
+    ...buildRamp(),
+    ...buildRampDoor()
+  ]
+};
+
+const placeWindows = () => {
+  const placeWindow = (position) => 
+    cube(position, [0.55, 1, 0.05], [0.3, 0.3, 0.3]).texture('res/window.jpg')
+
+  return [
+    // Front of the building
+    placeWindow([-1.3, 1.1, 4]),
+    placeWindow([-2.0, 1.1, 4]),
+    placeWindow([-2.8, 1.1, 4]),
+    placeWindow([-3.6, 1.1, 4]),
+    placeWindow([2.7, 1.1, 4]),
+    placeWindow([3.5, 1.1, 4]),
+
+    placeWindow([0, 1.1, 4]).rotate(0, 90, 0)
+  ]
+};
+
+const sideColumns = () => {
+  const placeSideColumn = (position) => {
+    const children = [
+      prism([0, 0.05, 0], [0.05, 0.05, 1.55], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 2, .15).rotate(90, 90, 0),
+      prism([0, -0.05, 0], [0.05, -0.05, 1.55], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 2, .15).rotate(90, 90, 0),
+
+      cube([0, 0.975, 0], [0.05, 0.4, 0.05], [1, 0.7, 0.7]).texture('res/yellowsandstone.jpg').children([
+        prism([0, 0.05, 0], [0.05, 0.05, 0.4], [1, 0.7, 0.7]).texture('res/yellowsandstone.jpg', 2, .15).rotate(90, 90, 0),
+        prism([0, -0.05, 0], [0.05, -0.05, 0.4], [1, 0.7, 0.7]).texture('res/yellowsandstone.jpg', 2, .15).rotate(90, 90, 0),
+      ]),
+
+      cube([0, 1.325, 0], [0.125, 0.4, 0.10], [1, 0.7, 0.7]).children([
+        prism([0, .275, 0], [0.10, 0.15, 0.125], [1, 0.7, 0.7]).rotate(0, 90, 0),
+        cube([0, 0.1, 0.1625], [0.05, 0.125, 0.3], [0.1, 0.1, 0.1]),
+        cube([0, 0.825, 0.25], [0.05, 1.325, 0.125], [0.1, 0.1, 0.1]),        
+      ])
+    ];
+
+    const pos1 = position, pos2 = [position[0]+0.2, position[1], position[2]];
+
+    return [
+      cube(pos1, [0.05, 1.55, 0.05], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 4, 1.75).children(children),
+      cube(pos2, [0.05, 1.55, 0.05], [1, 0.8, 0.6]).texture('res/redbrick.jpg', 4, 1.75).children(children)
     ]
   };
 
   return [
-    ...buildRamp()
+    ...placeSideColumn([1, 0.785, 4.025])
   ]
 };
 
@@ -216,7 +274,10 @@ const rowanHouse = () => {
     cube([0, 0, 0], [15, 0.35, 15], [0.5, 0.5, 0.5]).id("root").children([
       ...buildMainLayers(),
       ...buildFrontEntrance(),
-      ...buildSideEntrance()
+      ...buildSideEntrance(),
+
+      ...sideColumns()
+      // ...placeWindows()
     ])
   ];
 }
@@ -224,7 +285,7 @@ const rowanHouse = () => {
 const createScene = () => {
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
-  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/ramp3.jpg']);
+  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg']);
   
   makeModelMoveable(scene, idObjects);
 

@@ -206,7 +206,6 @@ class Cube extends Shape {
 
   _textureCoords() {
     if (this._customTexelCoords) {
-      console.log("Using custom...");
       return this._customTexelCoords;
     }
 
@@ -279,7 +278,6 @@ class Prism extends Shape {
 
   _textureCoords() {
     if (this._customTexelCoords) {
-      console.log("using custom from prism");
       return this._customTexelCoords;
     }
     
@@ -489,7 +487,7 @@ const _calculateNormalMatrix = (modelMatrix) => {
 
 class Scene {
   constructor(canvas) {
-    this._backgroundColor = [0, 0, 0];
+    this._backgroundColor = [0.9, 0.9, .9];
 
     this._cameraPos = [0, 6, 22];
     this._lookAt = [0, 0, -10];
