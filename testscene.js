@@ -3,24 +3,26 @@
   https://www.google.com/maps/@54.7645956,-1.5723251,2a,75y,194.28h,83.81t/data=!3m6!1e1!3m4!1sQ33hJoKTtihha2HTjPOxJQ!2e0!7i13312!8i6656
 */
 
+const keyCodes = {
+  LeftArrow: 37,
+  UpArrow: 38,
+  RightArrow: 39,
+  DownArrow: 40,
+
+  Q: 81,
+  E: 69,
+
+  W: 87,
+  S: 83,
+
+  A: 65,
+  D: 68,
+
+  J: 74,
+}
+
 const makeModelMoveable = (scene, idObjects) => {
   const root = idObjects['root'];
-
-  const keyCodes = {
-    LeftArrow: 37,
-    UpArrow: 38,
-    RightArrow: 39,
-    DownArrow: 40,
-
-    Q: 81,
-    E: 69,
-
-    W: 87,
-    S: 83,
-
-    A: 65,
-    D: 68
-  }
 
   // Up Rotation: root.rotate(-angle, 0, 0)
   // Down Rotation: root.rotate(angle, 0, 0);
@@ -160,14 +162,18 @@ const buildMainLayers = () => [ // Group by same textures.
 const buildFrontEntrance = () => {
   const buildFrontDoor = () => {
     return [
-      cube([-0.275, 0.8, 5.325], [0.545, 1.375, 0.1], [0.4, 0.4, 0.4]).id("leftDoor").texture("res/window.jpg").children([
-        cube([0.175, 0, 0.1], [0.03, 0.25, 0.1], [1, 1, 1]),
-        cube([0.14, 0, 0.135], [0.1, 0.25, 0.03], [1, 1, 1])
+      cube([-.545, 0.8, 5.325], [0,0,0], [0, 0, 0]).children([
+        cube([0.2725, 0, 0], [0.545, 1.375, 0.1], [0.4, 0.4, 0.4]).id("leftFrontDoor").texture("res/window.jpg").children([
+          cube([0.175, 0, 0.1], [0.03, 0.25, 0.1], [1, 1, 1]),
+          cube([0.14, 0, 0.135], [0.1, 0.25, 0.03], [1, 1, 1])
+        ])
       ]),
-      cube([0.275, 0.8, 5.325], [0.545, 1.375, 0.1], [0.4, 0.4, 0.4]).id("rightDoor").texture("res/window.jpg").children([
-        cube([-0.175, 0, 0.1], [0.03, 0.25, 0.1], [1, 1, 1]),
-        cube([-0.14, 0, 0.135], [0.1, 0.25, 0.03], [1, 1, 1])
-      ]),
+      cube([.545, 0.8, 5.325], [0, 0, 0], [0, 0, 0]).children([
+        cube([-0.275, 0, 0], [0.545, 1.375, 0.1], [0.4, 0.4, 0.4]).id("rightFrontDoor").texture("res/window.jpg").children([
+          cube([-0.175, 0, 0.1], [0.03, 0.25, 0.1], [1, 1, 1]),
+          cube([-0.14, 0, 0.135], [0.1, 0.25, 0.03], [1, 1, 1])
+        ])
+      ])
     ]
   }
 
@@ -320,6 +326,50 @@ const rowanHouse = () => {
   ];
 }
 
+let animationIsActive = false;
+
+const toggleFrontDoorAnimation = (scene, idObjects) => {
+  animationIsActive = true;
+
+  let currentStep = 0, stepDirection = 1, animationTimer;
+  const numberOfSteps = 40, rotationStep = 90/numberOfSteps;
+
+  const leftPivot = idObjects["leftFrontDoor"], rightPivot = idObjects["rightFrontDoor"];
+
+  const doAnimationStep = () => {
+    currentStep += stepDirection;
+
+    leftPivot.rotate(0, -stepDirection * rotationStep, 0);
+    rightPivot.rotate(0, stepDirection * rotationStep, 0);
+
+    if (currentStep === numberOfSteps) {
+      stepDirection = -1;
+    } else if (currentStep === 0 && stepDirection === -1) {
+      clearInterval(animationTimer);
+      animationIsActive = false;
+    }
+
+    scene.draw();
+  };
+
+  animationTimer = setInterval(doAnimationStep, 2000 / numberOfSteps)
+};
+
+const listenForAnimations = (scene, idObjects) => {
+  const onKeyDown = (keyEvent) => {
+    if (animationIsActive) { return; }
+    
+    switch(keyEvent.keyCode) {
+      case keyCodes.J: {
+        toggleFrontDoorAnimation(scene, idObjects);
+        return;
+      }
+    }
+  };
+
+  document.addEventListener('keydown', onKeyDown);
+};
+
 const createScene = () => {
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
@@ -327,6 +377,7 @@ const createScene = () => {
                       'res/driveway.jpg']);
   
   makeModelMoveable(scene, idObjects);
+  listenForAnimations(scene, idObjects);
 
   return scene;
 };
