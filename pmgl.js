@@ -4,9 +4,7 @@
 */
 
 const FRAGMENT_SHADER = `
-#ifdef GL_ES
 precision mediump float;
-#endif
 
 varying vec4 v_Color;
 varying vec3 v_Normal;
@@ -363,15 +361,25 @@ const _repeatVector = (vector, numOfTimes) => {
   return result;
 };
 
-const _getAttributeHandle = (gl, attributeId) => {
-  const attributeHandle = gl.getAttribLocation(gl.program, attributeId);
+const handleCache = {};
 
-  if (attributeHandle === -1) {
-    throw new Error('Failed to get handle ' + attributeId);
+const _lazyLoadShaderHandle = (gl, getter, handleId) => {
+  let handle = handleCache[handleId]; 
+  if (handle) { 
+    return handle;
+  }
+  
+  handle = getter(gl.program, handleId);
+  if (handle === -1) {
+    throw new Error('Failed to get handle ' + handleId);
   }
 
-  return attributeHandle;
-};
+  handleCache[handleId] = handle;
+
+  return handle;
+}
+
+const _getAttributeHandle = (gl, attributeId) => _lazyLoadShaderHandle(gl, gl.getAttribLocation, attributeId);
 
 const _initArrayBuffer = (gl, attributeId, data, elemsPerVal) => {
   const buffer = _createBuffer(gl);
@@ -400,15 +408,7 @@ const _initIndiciesBuffer = (gl, indicies) => {
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indicies, gl.STATIC_DRAW);
 };
 
-const _getUniformHandle = (gl, uniformHandle) => {
-  const handle = gl.getUniformLocation(gl.program, uniformHandle);
-
-  if (handle < 0) {
-    throw new TypeError('Failed to load uniform ' + uniformHandle);
-  }
-  
-  return handle;
-};
+const _getUniformHandle = (gl, uniformHandle) => _lazyLoadShaderHandle(gl, gl.getUniformLocation, uniformHandle);
 
 const _initUniformMat4 = (gl, uniformId, mat4) => {
   const uniformHandle = _getUniformHandle(gl, uniformId);
@@ -502,6 +502,7 @@ class Scene {
 
     this._nodes = [];
     this._textureManager = new _TextureManager();
+    this._lastLoadedTexture = '';
 
     this._gl.enable(this._gl.DEPTH_TEST);
     this._gl.clear(this._gl.COLOR_DEPTH_BUFFER | this._gl.DEPTH_BUFFER_BIT);
@@ -567,6 +568,8 @@ class Scene {
   }
 
   _loadTextureIntoBuffer(texture) {
+    this._lastLoadedTexture = texture.uri;
+
     const glTexture = this._textureManager.getTexture(texture.uri);
 
     _initArrayBuffer(this._gl, 'a_TexCoords', texture.coords, 2);
@@ -597,11 +600,18 @@ class Scene {
   _initaliseTextures(texture) { // texture = {texture, coords}
     const hasTexture = texture.uri !== '';
     
+    if (hasTexture && this._lastLoadedTexture === texture.uri) {
+      // If we've loaded everything beforehand, all we need do is update the texture coords.
+      _initArrayBuffer(this._gl, 'a_TexCoords', texture.coords, 2);
+      return;
+    }
+  
     _initUniformBit(this._gl, 'u_UseTextures', hasTexture);
 
     if (hasTexture) {
       this._loadTextureIntoBuffer(texture);
     } else {
+      this._lastLoadedTexture = '';
       _disableArrayBuffer(this._gl, 'a_TexCoords');
     }
   }
