@@ -139,6 +139,10 @@ class Shape {
     this._position = addVector(this._position, x, y, z)
   }
 
+  setColour(r, g, b) {
+    this._colour = [r, g, b];
+  }
+
   texture(textureUri, multiplierX, multiplierY) {
     this._texture = textureUri;
     this._txMultX = multiplierX || 1;
@@ -147,6 +151,10 @@ class Shape {
 
   add(node) {
     this._children.push(node);
+  }
+
+  children() {
+    return this._children;
   }
 
   setTexelCoords(coords) {

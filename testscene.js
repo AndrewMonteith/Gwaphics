@@ -19,6 +19,7 @@ const keyCodes = {
   D: 68,
 
   J: 74,
+  K: 75,
 }
 
 const makeModelMoveable = (scene, idObjects) => {
@@ -317,8 +318,10 @@ const buildTexturedGround = () => {
 const buildFireAlarm = () => {
   return [
     cube([3.6, 2.15, 4], [0,0,0], [0, 0, 0]).children([
-      hexagon([0, 0, 0], [.3, .3, .2], [1, .7, 0]),
-      cube([0, 0, 0.035], [.2, .125, .05], [1, 1, 1]).texture('res/adt.jpg')
+      cube([0, 0, 0], [0, 0, 0], [0, 0, 0]).id("firealarm-rot").children([
+        hexagon([0, 0, 0], [.3, .3, .2], [1, .7, 0]).id("firealarm-hexagon"),
+        cube([0, 0, 0.035], [.2, .125, .05], [1, 1, 1]).id("firealarm-texture").texture('res/adt.jpg')
+      ])
     ])
   ]
 };
@@ -339,23 +342,17 @@ const rowanHouse = () => [
 
 let animationIsActive = false;
 
-const toggleFrontDoorAnimation = (scene, idObjects) => {
+const doAnimationCycle = (totalTime, numbeOfSteps, stepCallback) => {
   animationIsActive = true;
 
   let currentStep = 0, stepDirection = 1, animationTimer;
-  const numberOfSteps = 40, rotationStep = 90/numberOfSteps;
-
-  const frontleftPivot = idObjects["leftFrontDoor"], frontRightPivot = idObjects["rightFrontDoor"];
-  const sidePivot = idObjects["sideDoor"];
 
   const doAnimationStep = () => {
     currentStep += stepDirection;
+    
+    stepCallback(stepDirection, currentStep);
 
-    frontleftPivot.rotate(0, -stepDirection * rotationStep, 0);
-    frontRightPivot.rotate(0, stepDirection * rotationStep, 0);
-    sidePivot.rotate(0, -stepDirection* rotationStep, 0);
-
-    if (currentStep === numberOfSteps) {
+    if (currentStep === numbeOfSteps) {
       stepDirection = -1;
     } else if (currentStep === 0 && stepDirection === -1) {
       clearInterval(animationTimer);
@@ -365,7 +362,46 @@ const toggleFrontDoorAnimation = (scene, idObjects) => {
     scene.draw();
   };
 
-  animationTimer = setInterval(doAnimationStep, 2000 / numberOfSteps)
+  animationTimer = setInterval(doAnimationStep, totalTime/numbeOfSteps);
+}
+
+const toggleFrontDoorAnimation = (scene, idObjects) => {
+  const numberOfSteps = 40, rotationStep = 90/numberOfSteps;
+
+  const frontleftPivot = idObjects["leftFrontDoor"], frontRightPivot = idObjects["rightFrontDoor"];
+  const sidePivot = idObjects["sideDoor"];
+
+  doAnimationCycle(2000, numberOfSteps, (stepDirection) => {
+    frontleftPivot.rotate(0, -stepDirection * rotationStep, 0);
+    frontRightPivot.rotate(0, stepDirection * rotationStep, 0);
+    sidePivot.rotate(0, -stepDirection* rotationStep, 0);
+  });
+};
+
+const toggleAlarmAngryAnimation = (scene, idObjects) => {
+  const tweener = (t, d) => -1/2 * (Math.cos(Math.PI*t/d) - 1);
+  const lerp = (a, b, r) => a + (b-a)*r;
+  
+  const hexagon = idObjects["firealarm-hexagon"], texture = idObjects["firealarm-texture"];
+  const startColour = [1, .7, 0], endColour = [1, .3, 0];
+  
+  const numberOfSteps = 20, rotationStep = 90/numberOfSteps;
+
+  const firealarmRot = idObjects["firealarm-rot"];
+
+  doAnimationCycle(200, numberOfSteps, (_, currentStep) => {
+    const rColour = tweener(currentStep, numberOfSteps);
+
+    hexagon.children().forEach(child => {
+      child.setColour(
+        lerp(startColour[0], endColour[0], rColour),
+        lerp(startColour[1], endColour[1], rColour),
+        lerp(startColour[2], endColour[2], rColour));
+    });
+
+    const rotationDirection = (currentStep < 5 || currentStep > 14) ? 1 : -1;
+    firealarmRot.rotate(0, 0, rotationStep*rotationDirection);
+  });
 };
 
 const listenForAnimations = (scene, idObjects) => {
@@ -375,6 +411,10 @@ const listenForAnimations = (scene, idObjects) => {
     switch(keyEvent.keyCode) {
       case keyCodes.J: {
         toggleFrontDoorAnimation(scene, idObjects);
+        return;
+      };
+      case keyCodes.K: {
+        toggleAlarmAngryAnimation(scene, idObjects);
         return;
       }
     }
@@ -391,7 +431,7 @@ const createScene = () => {
                       'res/driveway.jpg', 'res/adt.jpg']);
   
   makeModelMoveable(scene, idObjects);
-  // listenForAnimations(scene, idObjects);
+  listenForAnimations(scene, idObjects);
 
   return scene;
 };
