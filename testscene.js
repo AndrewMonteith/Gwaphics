@@ -22,65 +22,72 @@ const keyCodes = {
   K: 75,
 }
 
-const makeModelMoveable = (scene, idObjects) => {
-  const root = idObjects['root'];
+const makeCameraMoveable = (scene) => {
+  let angleX = 0, angleY = 0;
+  let cameraPosition = [0, 6, 22];
 
-  // Up Rotation: root.rotate(-angle, 0, 0)
-  // Down Rotation: root.rotate(angle, 0, 0);
+  // Vector looking forward.
+  const getLookAt = () => {
+    const radX = rad(angleX), radY = rad(angleY);
 
-  const onKeyDown = keyEvent => {
-    const angle = 5;
-    const dPos = 0.5;
-    switch (keyEvent.keyCode) {
-      case keyCodes.W: {
-        scene.offsetCameraPos(0, 0, -dPos);
-        break;
-      };
-      case keyCodes.S: {
-        scene.offsetCameraPos(0, 0, dPos);
-        break;
-      };
-      case keyCodes.A: {
-        scene.offsetCameraPos(-dPos, 0, 0);
-        break;
-      };
-      case keyCodes.D: {
-        scene.offsetCameraPos(dPos, 0, 0);
-        break;
-      };
-      case keyCodes.Q: {
-        scene.offsetCameraPos(0, dPos, 0);
-        break;
-      };
-      case keyCodes.E: {
-        scene.offsetCameraPos(0, -dPos, 0);
-        break;
-      };
-
-      case keyCodes.LeftArrow: {
-        root.rotate(0, -angle, 0);
-        break;
-      };
-      case keyCodes.RightArrow: {
-        root.rotate(0, angle, 0)
-        break;
-      };
-      case keyCodes.UpArrow: {
-        root.translate(0, 0, -1);
-        break;
-      };
-      case keyCodes.DownArrow: {
-        root.translate(0, 0, 1);
-        break;
-      };
-    }
-
-    scene.draw();
+    return [
+      -Math.sin(radX),
+      Math.sin(radY)*Math.cos(radX),
+      -Math.cos(radY) * Math.cos(radX)
+    ]
   };
 
-  document.addEventListener("keydown", onKeyDown);
-};
+  const getSidewaysVector = () => {
+    const radX = rad(angleX), radY = rad(angleY);
 
+    return [
+      Math.cos(radY),
+      Math.sin(radX)*Math.sin(radY),
+      -Math.cos(radX)*Math.sin(radY)
+    ];
+  };
+
+  const invert = (v) => v.map(u => u * -1);
+
+  const onKeyDown = (keyEvent) => {
+    switch(keyEvent.keyCode) {
+      case keyCodes.W: {
+        angleY += 3;
+        break;
+      }
+      case keyCodes.S:
+        angleY -= 3;
+        break;
+      case keyCodes.A: 
+        angleX += 3;
+        break;
+      case keyCodes.D:
+        angleX -= 3;
+        break;
+      case keyCodes.UpArrow:
+        cameraPosition = addVector(cameraPosition, ...getLookAt());
+        break;
+      case keyCodes.DownArrow:
+        cameraPosition = addVector(cameraPosition, ...invert(getLookAt()));
+        break;
+      case keyCodes.LeftArrow:
+        cameraPosition = addVector(cameraPosition, ...invert(getSidewaysVector()));
+        break;
+      case keyCodes.RightArrow:
+        cameraPosition = addVector(cameraPosition, ...(getSidewaysVector()));
+        break;
+      default:
+        return;
+    }
+
+    scene.setCameraPos(cameraPosition);
+    
+    scene.setLookAt(addVector(cameraPosition, ...getLookAt()));
+    scene.draw();
+  }
+
+  document.addEventListener('keydown', onKeyDown);
+};
 
 /*
   Paneled window layer near the top of the building
@@ -342,7 +349,7 @@ const rowanHouse = () => [
 
 let animationIsActive = false;
 
-const doAnimationCycle = (totalTime, numbeOfSteps, stepCallback) => {
+const doAnimationCycle = (scene, totalTime, numbeOfSteps, stepCallback) => {
   animationIsActive = true;
 
   let currentStep = 0, stepDirection = 1, animationTimer;
@@ -358,7 +365,6 @@ const doAnimationCycle = (totalTime, numbeOfSteps, stepCallback) => {
       clearInterval(animationTimer);
       animationIsActive = false;
     }
-
     scene.draw();
   };
 
@@ -371,7 +377,7 @@ const toggleFrontDoorAnimation = (scene, idObjects) => {
   const frontleftPivot = idObjects["leftFrontDoor"], frontRightPivot = idObjects["rightFrontDoor"];
   const sidePivot = idObjects["sideDoor"];
 
-  doAnimationCycle(2000, numberOfSteps, (stepDirection) => {
+  doAnimationCycle(scene, 2000, numberOfSteps, (stepDirection) => {
     frontleftPivot.rotate(0, -stepDirection * rotationStep, 0);
     frontRightPivot.rotate(0, stepDirection * rotationStep, 0);
     sidePivot.rotate(0, -stepDirection* rotationStep, 0);
@@ -389,7 +395,7 @@ const toggleAlarmAngryAnimation = (scene, idObjects) => {
 
   const firealarmRot = idObjects["firealarm-rot"];
 
-  doAnimationCycle(200, numberOfSteps, (_, currentStep) => {
+  doAnimationCycle(scene, 200, numberOfSteps, (_, currentStep) => {
     const rColour = tweener(currentStep, numberOfSteps);
 
     hexagon.children().forEach(child => {
@@ -430,7 +436,7 @@ const createScene = () => {
   scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg',
                       'res/driveway.jpg', 'res/adt.jpg']);
   
-  makeModelMoveable(scene, idObjects);
+  makeCameraMoveable(scene);
   listenForAnimations(scene, idObjects);
 
   return scene;

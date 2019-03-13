@@ -83,6 +83,8 @@ const addVector = (vec, x, y, z) => [
   vec[2] + z
 ]
 
+const rad = deg => deg * Math.PI/180;
+
 const _lazyLoadedValues = {};
 const _lazyLoad = (id, value) => {
   let val = _lazyLoadedValues[id];
@@ -349,7 +351,7 @@ class EquilaterialPrism extends Shape {
 
   _normals() {
     return _lazyLoad('prism-eq-normals', () => { 
-      const rad30 = 30 * (Math.PI / 180);
+      const rad30 = rad(30);
       
       const nx = Math.cos(rad30) * Math.cos(rad30);
       const ny = Math.cos(rad30) * Math.sin(rad30);
@@ -590,7 +592,7 @@ class Scene {
     this._backgroundColor = [0.9, 0.9, .9];
 
     this._cameraPos = [0, 6, 22];
-    this._lookAt = [0, 0, -10];
+    this._lookAt = [0, 6, 21];
 
     // For now we're only going to support a single point light.
     this._lightPosition = [0, 6, 18];  // Temp?s
@@ -618,6 +620,14 @@ class Scene {
 
   changeLookAt(lookatX, lookatY, lookatZ) {
     this._lookAt = [lookatX, lookatY, lookatZ];
+  }
+
+  setCameraPos(cameraPos) {
+    this._cameraPos = cameraPos;
+  }
+
+  setLookAt(vec) {
+    this._lookAt = vec;
   }
 
   offsetCameraPos(x, y, z) {
@@ -832,7 +842,7 @@ const prism = (position, size, colour, texture) => _createProxyObject(new RightA
 const eqPrism = (position, size, colour, texture) => _createProxyObject(new EquilaterialPrism(position, size, colour, texture));
 
 const hexagon = (position, size, colour) => {
-  const heightOffset = -size[1] * Math.cos(30* Math.PI/180)/4;
+  const heightOffset = -size[1] * Math.cos(rad(30))/4;
 
   const eqTriangleSize = [size[0]/2, size[1]/2, size[2]/2];
 
