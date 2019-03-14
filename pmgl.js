@@ -595,9 +595,9 @@ class Scene {
     this._lookAt = [0, 6, 21];
 
     // For now we're only going to support a single point light.
-    this._lightPosition = [0, 6, 18];  // Temp?s
+    this._lightPosition = [0, 0, 0]//[0, 6, 18];  // Temp?s
     this._lightColour = [0.6, 0.6, 0.6];
-    this._ambientLight = [0.3, 0.3, 0.3];
+    this._ambientLight = [0.1, 0.1, 0.1];
 
     this._gl = _createWebGLContext(canvas);
     this._projectionMatrix = _createProjectionMatrix(canvas.width / canvas.height);

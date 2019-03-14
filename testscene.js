@@ -86,10 +86,8 @@ const makeCameraMoveable = (scene) => {
         return;
     }
 
-    console.log("New Position:", cameraPosition);
     scene.setCameraPos(cameraPosition);
     
-    console.log("New Lookat:", addVector(cameraPosition, ...cameraObjSpaceUnitVectors[2]));
     scene.setLookAt(addVector(cameraPosition, ...cameraObjSpaceUnitVectors[2]));
     scene.draw();
   }
