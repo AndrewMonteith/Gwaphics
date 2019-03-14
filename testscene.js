@@ -20,6 +20,8 @@ const keyCodes = {
 
   J: 74,
   K: 75,
+
+  L: 76,
 }
 
 const _getRotatedObjectVectors = (angleX, angleY) => { 
@@ -34,7 +36,7 @@ const _getRotatedObjectVectors = (angleX, angleY) => {
 
 const makeCameraMoveable = (scene) => {
   let angleX = 0, angleY = 0;
-  let cameraPosition = [0, 6, 22];
+  let cameraPosition = scene.getCameraPos(); 
 
   let cameraObjSpaceUnitVectors = _getRotatedObjectVectors(angleX, angleY);
 
@@ -53,7 +55,7 @@ const makeCameraMoveable = (scene) => {
 
     cameraObjSpaceUnitVectors = _getRotatedObjectVectors(angleX, angleY);
   }
-
+  
 
   const onKeyDown = (keyEvent) => {
     switch(keyEvent.keyCode) {
@@ -82,7 +84,6 @@ const makeCameraMoveable = (scene) => {
         cameraPosition = addVector(cameraPosition, ...invert(cameraObjSpaceUnitVectors[1]));
         break;
       default:
-        console.log(keyEvent);
         return;
     }
 
@@ -358,7 +359,7 @@ let animationIsActive = false;
 const doAnimationCycle = (scene, totalTime, numbeOfSteps, stepCallback) => {
   animationIsActive = true;
 
-  let currentStep = 0, stepDirection = 1, animationTimer;
+  let currentStep = 0, stepDirection = 1, animationTimer, finishCallback;
 
   const doAnimationStep = () => {
     currentStep += stepDirection;
@@ -370,11 +371,19 @@ const doAnimationCycle = (scene, totalTime, numbeOfSteps, stepCallback) => {
     } else if (currentStep === 0 && stepDirection === -1) {
       clearInterval(animationTimer);
       animationIsActive = false;
+
+      if (finishCallback) {
+        finishCallback();
+      }
     }
     scene.draw();
   };
 
   animationTimer = setInterval(doAnimationStep, totalTime/numbeOfSteps);
+
+  return {'done': doneCallback => {
+    finishCallback = doneCallback;
+  }}
 }
 
 const toggleFrontDoorAnimation = (scene, idObjects) => {
@@ -416,6 +425,30 @@ const toggleAlarmAngryAnimation = (scene, idObjects) => {
   });
 };
 
+const toggleLightingAnimation = (scene, idObjects) => {
+  const a = 45, b = 10; // light source will move in inerval [-a, a] with max height of b.
+  const numberOfSteps = 80, thetaStep = Math.PI/numberOfSteps;
+  
+  const getAnimationPoint = (angle) => [-a*Math.cos(angle), b*Math.sin(angle/2)];
+
+  scene.setAmbientColour(0.025, 0.025, 0.025);
+
+  const origLightPosition = scene.getLightPosition();
+  
+  doAnimationCycle(scene, 4000, numberOfSteps, (_, currentStep) => {
+    const dPosition = getAnimationPoint(thetaStep*currentStep);
+    
+    scene.setLightPosition(
+      dPosition[0],
+      dPosition[1],
+      origLightPosition[2]);
+
+  }).done(() => {
+    scene.setAmbientColour(0.1, 0.1, 0.1);
+    scene.setLightPosition(...origLightPosition)
+  });
+};
+
 const listenForAnimations = (scene, idObjects) => {
   const onKeyDown = (keyEvent) => {
     if (animationIsActive) { return; }
@@ -428,7 +461,10 @@ const listenForAnimations = (scene, idObjects) => {
       case keyCodes.K: {
         toggleAlarmAngryAnimation(scene, idObjects);
         return;
-      }
+      };
+      case keyCodes.L:
+        toggleLightingAnimation(scene, idObjects);
+        return;
     }
   };
 
@@ -439,7 +475,8 @@ const listenForAnimations = (scene, idObjects) => {
 const createScene = () => {
   const [scene, idObjects] = buildScene(document.getElementById('webpageCanvas'), rowanHouse());
 
-  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg',
+  scene.loadTextures(['res/redbrick.jpg', 'res/yellowsandstone.jpg', 
+                      'res/window.jpg', 'res/ramp.jpg', 'res/blackplastic.jpg',
                       'res/driveway.jpg', 'res/adt.jpg']);
   
   makeCameraMoveable(scene);

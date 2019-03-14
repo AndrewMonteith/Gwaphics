@@ -591,11 +591,11 @@ class Scene {
   constructor(canvas) {
     this._backgroundColor = [0.9, 0.9, .9];
 
-    this._cameraPos = [0, 6, 22];
-    this._lookAt = [0, 6, 21];
+    this._cameraPos = [0, 4, 21];
+    this._lookAt = [0, 4, 20];
 
     // For now we're only going to support a single point light.
-    this._lightPosition = [0, 0, 0]//[0, 6, 18];  // Temp?s
+    this._lightPosition = [0, 6, 18]//[0, 6, 18];  // Temp?s
     this._lightColour = [0.6, 0.6, 0.6];
     this._ambientLight = [0.1, 0.1, 0.1];
 
@@ -618,12 +618,24 @@ class Scene {
     this._backgroundColor = [r, g, b];
   }
 
-  changeLookAt(lookatX, lookatY, lookatZ) {
+  setLookAt(lookatX, lookatY, lookatZ) {
     this._lookAt = [lookatX, lookatY, lookatZ];
+  }
+
+  setLightPosition(x, y, z) {
+    this._lightPosition = [x, y, z];
+  }
+
+  setAmbientColour(r, g, b) {
+    this._ambientLight = [r, g, b];
   }
 
   setCameraPos(cameraPos) {
     this._cameraPos = cameraPos;
+  }
+
+  getCameraPos() {
+    return this._cameraPos;
   }
 
   setLookAt(vec) {
@@ -632,6 +644,10 @@ class Scene {
 
   offsetCameraPos(x, y, z) {
     this._cameraPos = addVector(this._cameraPos, x, y, z);
+  }
+
+  getLightPosition() {
+    return this._lightPosition;
   }
 
   add(node) {
