@@ -22,67 +22,75 @@ const keyCodes = {
   K: 75,
 }
 
+const _getRotatedObjectVectors = (angleX, angleY) => { 
+  const cx = Math.cos(rad(angleX)), cy = Math.cos(rad(angleY));
+  const sx = Math.sin(rad(angleX)), sy = Math.sin(rad(angleY));
+
+  // We return [x-vector, y-vector, z-vector]
+  return [ 
+    [cx, sx*sy, -cy*sx], [0, cy, sy], [-sx, sy*cx, -cx*cy]
+  ]
+}
+
 const makeCameraMoveable = (scene) => {
   let angleX = 0, angleY = 0;
   let cameraPosition = [0, 6, 22];
 
-  // Vector looking forward.
-  const getLookAt = () => {
-    const radX = rad(angleX), radY = rad(angleY);
+  let cameraObjSpaceUnitVectors = _getRotatedObjectVectors(angleX, angleY);
 
-    return [
-      -Math.sin(radX),
-      Math.sin(radY)*Math.cos(radX),
-      -Math.cos(radY) * Math.cos(radX)
-    ]
+  const invert = v => v.map(u => u * -1);
+
+  const angleChanges = {
+    [keyCodes.UpArrow]: [0, 8],
+    [keyCodes.DownArrow]: [0, -8],
+    [keyCodes.LeftArrow]: [8, 0],
+    [keyCodes.RightArrow]: [-8, 0]
   };
 
-  const getSidewaysVector = () => {
-    const radX = rad(angleX), radY = rad(angleY);
+  const changeAngle = (dx, dy) => {
+    angleX += dx;
+    angleY += dy;
 
-    return [
-      Math.cos(radY),
-      Math.sin(radX)*Math.sin(radY),
-      -Math.cos(radX)*Math.sin(radY)
-    ];
-  };
+    cameraObjSpaceUnitVectors = _getRotatedObjectVectors(angleX, angleY);
+  }
 
-  const invert = (v) => v.map(u => u * -1);
 
   const onKeyDown = (keyEvent) => {
     switch(keyEvent.keyCode) {
-      case keyCodes.W: {
-        angleY += 3;
+      case keyCodes.UpArrow:
+      case keyCodes.DownArrow:
+      case keyCodes.LeftArrow:
+      case keyCodes.RightArrow:
+        changeAngle(...angleChanges[keyEvent.keyCode]);
         break;
-      }
+      case keyCodes.W:
+        cameraPosition = addVector(cameraPosition, ...cameraObjSpaceUnitVectors[2]);
+        break;
       case keyCodes.S:
-        angleY -= 3;
+        cameraPosition = addVector(cameraPosition, ...invert(cameraObjSpaceUnitVectors[2]));
         break;
-      case keyCodes.A: 
-        angleX += 3;
+      case keyCodes.A:
+        cameraPosition = addVector(cameraPosition, ...invert(cameraObjSpaceUnitVectors[0]));
         break;
       case keyCodes.D:
-        angleX -= 3;
+        cameraPosition = addVector(cameraPosition, ...(cameraObjSpaceUnitVectors[0]));
         break;
-      case keyCodes.UpArrow:
-        cameraPosition = addVector(cameraPosition, ...getLookAt());
+      case keyCodes.Q:
+        cameraPosition = addVector(cameraPosition, ...cameraObjSpaceUnitVectors[1]);
         break;
-      case keyCodes.DownArrow:
-        cameraPosition = addVector(cameraPosition, ...invert(getLookAt()));
-        break;
-      case keyCodes.LeftArrow:
-        cameraPosition = addVector(cameraPosition, ...invert(getSidewaysVector()));
-        break;
-      case keyCodes.RightArrow:
-        cameraPosition = addVector(cameraPosition, ...(getSidewaysVector()));
+      case keyCodes.E:
+        cameraPosition = addVector(cameraPosition, ...invert(cameraObjSpaceUnitVectors[1]));
         break;
       default:
+        console.log(keyEvent);
         return;
     }
 
+    console.log("New Position:", cameraPosition);
     scene.setCameraPos(cameraPosition);
     
-    scene.setLookAt(addVector(cameraPosition, ...getLookAt()));
+    console.log("New Lookat:", addVector(cameraPosition, ...cameraObjSpaceUnitVectors[2]));
+    scene.setLookAt(addVector(cameraPosition, ...cameraObjSpaceUnitVectors[2]));
     scene.draw();
   }
 
